@@ -1,68 +1,79 @@
 {
-  "name": "djooke-market",
+  "name": "frontend-admin",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
-  },
   "dependencies": {
-    "@gongddex/hydro-sdk-wallet": "0.0.155",
-    "@kouts/vue-modal": "^2.0.10",
-    "axios": "^0.21.1",
-    "bootstrap": "^4.5.0",
-    "bootstrap-vue": "^2.16.0",
-    "chart.js": "^2.9.4",
-    "core-js": "^3.6.4",
-    "dayjs": "^1.10.1",
-    "events": "^3.2.0",
-    "jquery": "^3.6.0",
-    "lodash": "^4.17.21",
-    "magnific-popup": "^1.1.0",
-    "marked": "^1.1.0",
-    "moment": "^2.15.2",
-    "pako": "^2.0.2",
-    "pubnub-vue": "^1.0.1",
-    "tradingview-api": "^1.0.2",
-    "underscore": "^1.13.1",
-    "vee-validate": "^3.4.5",
-    "vue": "^2.6.11",
-    "vue-burger-menu": "^2.0.5",
-    "vue-chartjs": "^3.5.1",
-    "vue-custom-scrollbar": "^1.4.0",
-    "vue-i18n": "^8.24.5",
-    "vue-js-modal": "^2.0.0-rc.6",
-    "vue-metamask": "^2.0.3",
-    "vue-owl-carousel2": "^2.0.7",
-    "vue-property-decorator": "^8.3.0",
-    "vue-router": "^3.3.4",
-    "vue-save-state": "^1.2.0",
-    "vue-slick-carousel": "^1.0.6",
-    "vue2-datepicker": "^3.9.0",
-    "vue2-flip-countdown": "^0.11.1",
-    "vuelidate": "^0.7.6",
-    "vuetify": "^2.5.6",
-    "vuex": "^3.5.1",
-    "web3": "^1.6.0",
-    "web3-utils": "^1.5.1"
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/icons": "^4.11.2",
+    "@reduxjs/toolkit": "^1.7.1",
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "axios": "^0.25.0",
+    "clsx": "^1.1.1",
+    "connected-react-router": "^6.9.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "everscale-inpage-provider": "^0.3.9",
+    "formik": "^2.2.9",
+    "moment": "^2.29.1",
+    "prettier": "^2.5.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-intl": "^5.24.7",
+    "react-redux": "^7.2.6",
+    "react-router-dom": "^6.2.1",
+    "react-scripts": "5.0.0",
+    "react-use": "^17.3.2",
+    "recharts": "^2.1.9",
+    "redux-saga": "^1.1.3",
+    "typescript": "^4.5.4",
+    "web-vitals": "^2.1.3",
+    "web3": "^1.7.1",
+    "yup": "^0.32.11"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "rules": {
+          "@typescript-eslint/explicit-module-boundary-types": [
+            "warn"
+          ]
+        }
+      }
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0",
-    "babel-eslint": "^10.1.0",
-    "deepmerge": "^4.2.2",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^7.0.0",
-    "sass": "^1.32.13",
-    "sass-loader": "^10.1.1",
-    "vue-template-compiler": "^2.6.12"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "eslint-config-prettier": "^8.3.0"
+  }
 }
