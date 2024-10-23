@@ -15,14 +15,20 @@ const useFreighter = (): IFreighterContext => {
   const [client, setClient] = useState<IFreighterContext["client"]>();
 
   const connect = async () => {
-    setStatus("connecting");
-    const { isConnected } = await freighterApi.isConnected();
-    if (!isConnected) {
-      setStatus("disconnected");
-      // TODO open freighter page
-      throw new Error('Freighter is not available')
+    try {
+      setStatus("connecting");
+      const { isConnected } = await freighterApi.isConnected();
+      if (!isConnected) {
+        setStatus("disconnected");
+        // TODO open freighter page
+        throw new Error("Freighter is not available");
+      }
+      const result = await freighterApi.requestAccess();
+      if (result.error) throw result.error;
+    } catch (e) {
+      console.error(e);
+      setStatus("failed");
     }
-    await freighterApi.requestAccess();
   };
 
   // watch wallet changes

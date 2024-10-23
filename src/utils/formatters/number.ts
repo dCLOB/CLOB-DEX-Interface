@@ -1,4 +1,5 @@
-export const formatDecimal = (value: number | bigint | `${number}`) =>
+export const formatDecimal = (value: number | bigint | `${number}`, minDigits = 2, maxDigits = 2) =>
   Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 6,
+    minimumFractionDigits: minDigits,
+    maximumFractionDigits: maxDigits,
   }).format(value);

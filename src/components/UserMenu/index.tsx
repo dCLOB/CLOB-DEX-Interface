@@ -1,5 +1,7 @@
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import {
   Popover,
   Paper,
@@ -30,7 +32,7 @@ export const UserMenu = () => {
 
   const open = Boolean(anchorEl);
 
-  const { address, isConnected } = useFreighterContext();
+  const { network, address, isConnected } = useFreighterContext();
   const balance = useBalance();
 
   if (!isConnected) return null;
@@ -39,12 +41,30 @@ export const UserMenu = () => {
 
   return (
     <>
-      <Button variant="contained" onClick={handleClick} sx={{ width: 160 }} color="secondary">
-        <Box display="flex" gap={2}>
-          <Avatar />
-          <Box display="flex" flexDirection="column">
-            <Typography variant="caption">{maskedAddress}</Typography>
-            <Typography variant="caption">{formatDecimal(balance as `${number}`)} XLM</Typography>
+      <Box>
+        <Typography variant="caption" color="textSecondary" lineHeight={1}>
+          Network
+        </Typography>
+        <Typography variant="body2" lineHeight={1.5}>
+          {network?.network}
+        </Typography>
+      </Box>
+      <Button
+        variant="contained"
+        onClick={handleClick}
+        sx={{ width: 160 }}
+        color="secondary"
+        endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      >
+        <Box display="flex" gap={1.5}>
+          <Avatar sx={{ width: 30, height: 30 }} />
+          <Box display="flex" flexDirection="column" alignItems="flex-start" gap={0.5}>
+            <Typography variant="caption" lineHeight={1} noWrap color="textPrimary">
+              {maskedAddress}
+            </Typography>
+            <Typography variant="caption" lineHeight={1} noWrap fontWeight="500" color="textSecondary">
+              {formatDecimal(balance as `${number}`, 0)} XLM
+            </Typography>
           </Box>
         </Box>
       </Button>

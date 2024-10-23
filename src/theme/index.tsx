@@ -1,8 +1,8 @@
 "use client";
 import { createTheme } from "@mui/material/styles";
-import { Roboto } from "next/font/google";
+import { Inter } from "next/font/google";
 
-const roboto = Roboto({
+const inter = Inter({
   weight: ["300", "400", "500", "700"],
   subsets: ["latin"],
   display: "swap",
@@ -14,7 +14,7 @@ const theme = createTheme({
     mode: "dark",
   },
   typography: {
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: inter.style.fontFamily,
   },
 });
 
