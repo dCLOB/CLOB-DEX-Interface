@@ -16,6 +16,15 @@ const theme = createTheme({
   typography: {
     fontFamily: inter.style.fontFamily,
   },
+  components: {
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          fontVariantNumeric: "tabular-nums",
+        },
+      },
+    },
+  },
 });
 
 export default theme;
