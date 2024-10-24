@@ -6,6 +6,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { PairDropdown } from "@/components/TradingData/PairDropdown";
 import usePairStore from "@/stores/pair";
+import { getCurrenciesFromPair } from "@/utils";
 
 export const TradingData = () => {
   const { data } = useMarkets();
@@ -16,7 +17,7 @@ export const TradingData = () => {
 
   const isPositive = activePair && activePair.priceChange >= 0;
   const color = isPositive ? "success" : "error";
-  const [baseCurrency, quoteCurrency] = (activePair?.id ?? "").split("-");
+  const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(activePair?.id);
 
   return (
     <Card variant="outlined">
