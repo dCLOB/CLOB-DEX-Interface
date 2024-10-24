@@ -3,26 +3,27 @@ import React, { useEffect, useState } from "react";
 import { TokenSelect } from "@/components/TokenSelect";
 import { TextField } from "@/components/TextField";
 import { TOKENS } from "@/constants";
-import { useBalance } from "@/hooks/useBalance";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schema } from "./validationSchema";
-import { useDeposit } from "@/api/user";
+import { useGetBalance, useWithdraw } from "@/api/user";
 import { useFreighterContext } from "@/providers/FreighterProvider";
 import { LoadingButton } from "@mui/lab";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { CurrencyRow } from "@/components/CurrencyRow";
 
-interface DepositProps {
+interface WithdrawProps {
   onClose: () => void;
 }
 
-export const Deposit = ({ onClose }: DepositProps) => {
+export const Withdraw = ({ onClose }: WithdrawProps) => {
   const [token, setToken] = useState(TOKENS[0]);
 
   const { address } = useFreighterContext();
-  const balance = useBalance(token);
+  const { data } = useGetBalance(address);
+
+  const balance = data?.data.balance[token] ?? 0;
 
   const { control, handleSubmit, trigger, formState } = useForm({
     mode: "onChange",
@@ -38,12 +39,12 @@ export const Deposit = ({ onClose }: DepositProps) => {
     trigger("amount");
   }, [balance]);
 
-  const { mutateAsync: deposit, isPending } = useDeposit();
+  const { mutateAsync: withdraw, isPending } = useWithdraw();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit = async ({ amount }: { amount: string }) => {
-    await deposit({ address: address as string, token, amount: parseFloat(amount) });
+    await withdraw({ address: address as string, token, amount: parseFloat(amount) });
     await queryClient.refetchQueries({ queryKey: ["balance"] });
     enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
       variant: "success",
@@ -53,7 +54,7 @@ export const Deposit = ({ onClose }: DepositProps) => {
 
   return (
     <Dialog open onClose={onClose}>
-      <DialogTitle>Deposit</DialogTitle>
+      <DialogTitle>Withdraw</DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           <TokenSelect value={token} onChange={setToken} />
@@ -67,7 +68,7 @@ export const Deposit = ({ onClose }: DepositProps) => {
               <TextField
                 withNumberMask
                 InputProps={{ endAdornment: token }}
-                helperText={fieldState.error?.message ?? "Please, set amount to deposit"}
+                helperText={fieldState.error?.message ?? "Enter the amount to withdraw"}
                 label="Amount"
                 {...field}
                 error={fieldState.invalid}
@@ -80,7 +81,7 @@ export const Deposit = ({ onClose }: DepositProps) => {
             Cancel
           </Button>
           <LoadingButton color="success" type="submit" loading={isPending} disabled={!formState.isValid}>
-            Deposit
+            Withdraw
           </LoadingButton>
         </DialogActions>
       </form>

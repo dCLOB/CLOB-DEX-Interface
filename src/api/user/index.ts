@@ -16,3 +16,8 @@ export const useDeposit = () =>
   useMutation({
     mutationFn: (data: DepositData) => API.post("api/mocks/v1/user/deposit", data),
   });
+
+export const useWithdraw = () =>
+  useMutation({
+    mutationFn: (data: DepositData) => API.post("api/mocks/v1/user/withdraw", data),
+  });

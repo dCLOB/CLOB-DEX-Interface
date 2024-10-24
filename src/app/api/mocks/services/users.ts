@@ -29,6 +29,12 @@ class UserService {
     const currentBalance = user.balance[token];
     user.balance[token] = currentBalance + amount;
   }
+
+  withdraw(address: string, token: string, amount: number) {
+    const user = this.getOrCreateUser(address);
+    const currentBalance = user.balance[token];
+    user.balance[token] = currentBalance - amount;
+  }
 }
 
 export const userService = new UserService();

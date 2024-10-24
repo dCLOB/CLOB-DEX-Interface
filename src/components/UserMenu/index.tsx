@@ -19,6 +19,7 @@ import { useFreighterContext } from "@/providers/FreighterProvider";
 import { useBalance } from "@/hooks/useBalance";
 import { formatDecimal } from "@/utils/formatters/number";
 import { Deposit } from "@/components/Deposit";
+import { Withdraw } from "@/components/Withdraw";
 
 export const UserMenu = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -37,6 +38,7 @@ export const UserMenu = () => {
   const balance = useBalance();
 
   const [depositOpen, setDepositOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   if (!isConnected) return null;
 
@@ -97,7 +99,12 @@ export const UserMenu = () => {
               </ListItemIcon>
               <ListItemText>Deposit</ListItemText>
             </MenuItem>
-            <MenuItem>
+            <MenuItem
+              onClick={() => {
+                setWithdrawOpen(true);
+                handleClose();
+              }}
+            >
               <ListItemIcon>
                 <ArrowDownwardIcon fontSize="small" />
               </ListItemIcon>
@@ -107,6 +114,7 @@ export const UserMenu = () => {
         </Paper>
       </Popover>
       {depositOpen && <Deposit onClose={() => setDepositOpen(false)} />}
+      {withdrawOpen && <Withdraw onClose={() => setWithdrawOpen(false)} />}
     </>
   );
 };
