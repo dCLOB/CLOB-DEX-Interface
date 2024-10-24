@@ -18,6 +18,7 @@ import { useState } from "react";
 import { useFreighterContext } from "@/providers/FreighterProvider";
 import { useBalance } from "@/hooks/useBalance";
 import { formatDecimal } from "@/utils/formatters/number";
+import { Deposit } from "@/components/Deposit";
 
 export const UserMenu = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -34,6 +35,8 @@ export const UserMenu = () => {
 
   const { network, address, isConnected } = useFreighterContext();
   const balance = useBalance();
+
+  const [depositOpen, setDepositOpen] = useState(false);
 
   if (!isConnected) return null;
 
@@ -83,7 +86,12 @@ export const UserMenu = () => {
       >
         <Paper sx={{ width: 160, maxWidth: "100%" }}>
           <MenuList>
-            <MenuItem>
+            <MenuItem
+              onClick={() => {
+                setDepositOpen(true);
+                handleClose();
+              }}
+            >
               <ListItemIcon>
                 <ArrowUpwardIcon fontSize="small" />
               </ListItemIcon>
@@ -98,6 +106,7 @@ export const UserMenu = () => {
           </MenuList>
         </Paper>
       </Popover>
+      {depositOpen && <Deposit onClose={() => setDepositOpen(false)} />}
     </>
   );
 };

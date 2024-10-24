@@ -23,8 +23,9 @@ export const useBalance = (currency = NATIVE_CURRENCY) => {
   }, [address, client, currency]);
 
   useEffect(() => {
+    setBalance("0");
     getBalance().catch((e) => console.error(e));
   }, [getBalance]);
 
-  return balance;
+  return balance as `${number}`;
 };
