@@ -4,7 +4,7 @@ import { Popover, Paper, Button, Box, Typography, MenuList, MenuItem } from "@mu
 import { useState } from "react";
 import usePairStore from "@/stores/pair";
 import { MenuItemContent } from "./styles";
-import { useMarkets } from "@/api/markets";
+import { useGetMarkets } from "@/api/markets";
 import { formatDecimal } from "@/utils/formatters/number";
 import { TokenIcon } from "@/components/TokenIcon";
 
@@ -24,7 +24,7 @@ export const PairDropdown = () => {
   const pair = usePairStore((state) => state.pair);
   const setPair = usePairStore((state) => state.setPair);
 
-  const { data } = useMarkets();
+  const { data } = useGetMarkets();
 
   const handleSelect = (value: string) => {
     setPair(value);

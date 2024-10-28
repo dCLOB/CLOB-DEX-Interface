@@ -1,4 +1,4 @@
-import { useMarkets } from "@/api/markets";
+import { useGetMarkets } from "@/api/markets";
 import { Box, Card, Typography } from "@mui/material";
 import { TradingDataValue } from "./TradingDataValue";
 import { formatDecimal } from "@/utils/formatters/number";
@@ -9,7 +9,7 @@ import usePairStore from "@/stores/pair";
 import { getCurrenciesFromPair } from "@/utils";
 
 export const TradingData = () => {
-  const { data } = useMarkets();
+  const { data } = useGetMarkets();
 
   const pair = usePairStore((state) => state.pair);
 

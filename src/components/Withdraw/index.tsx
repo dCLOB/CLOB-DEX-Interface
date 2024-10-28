@@ -44,7 +44,7 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit = async ({ amount }: { amount: string }) => {
-    await withdraw({ address: address as string, token, amount: parseFloat(amount) });
+    await withdraw({ token, amount: parseFloat(amount) });
     await queryClient.refetchQueries({ queryKey: ["balance"] });
     enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
       variant: "success",

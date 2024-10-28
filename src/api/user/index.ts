@@ -8,7 +8,7 @@ import { DepositData } from "@/api/user/types";
 export const useGetBalance = (address?: string) =>
   useQuery<AxiosResponse<UserData>>({
     queryKey: ["balance", address],
-    queryFn: () => API.get("api/mocks/v1/user/balance", { params: { address } }),
+    queryFn: () => API.get("api/mocks/v1/user/balance"),
     enabled: Boolean(address),
   });
 

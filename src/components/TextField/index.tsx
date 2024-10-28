@@ -16,7 +16,7 @@ const TextFieldMask = forwardRef<HTMLInputElement, InputBaseComponentProps>(func
     <IMaskInput
       {...other}
       mask={Number}
-      thousandsSeparator=","
+      // thousandsSeparator=","
       radix="."
       min={0}
       scale={6}

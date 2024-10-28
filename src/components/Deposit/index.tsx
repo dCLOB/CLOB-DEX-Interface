@@ -8,7 +8,6 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schema } from "./validationSchema";
 import { useDeposit } from "@/api/user";
-import { useFreighterContext } from "@/providers/FreighterProvider";
 import { LoadingButton } from "@mui/lab";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
@@ -21,21 +20,20 @@ interface DepositProps {
 export const Deposit = ({ onClose }: DepositProps) => {
   const [token, setToken] = useState(TOKENS[0]);
 
-  const { address } = useFreighterContext();
   const balance = useBalance(token);
 
-  const { control, handleSubmit, trigger, formState } = useForm({
+  const { control, handleSubmit, trigger, formState, getFieldState } = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      amount: "0.00",
+      amount: "",
     },
     resolver: yupResolver(schema),
     context: { balance },
   });
 
   useEffect(() => {
-    trigger("amount");
+    if (getFieldState("amount").isTouched) trigger("amount");
   }, [balance]);
 
   const { mutateAsync: deposit, isPending } = useDeposit();
@@ -43,7 +41,7 @@ export const Deposit = ({ onClose }: DepositProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit = async ({ amount }: { amount: string }) => {
-    await deposit({ address: address as string, token, amount: parseFloat(amount) });
+    await deposit({ token, amount: parseFloat(amount) });
     await queryClient.refetchQueries({ queryKey: ["balance"] });
     enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
       variant: "success",

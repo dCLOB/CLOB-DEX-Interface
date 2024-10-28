@@ -4,7 +4,7 @@ import { MarketResponse } from "./types";
 import { API, REFETCH_INTERVAL } from "../api";
 import { AxiosResponse } from "axios";
 
-export const useMarkets = () =>
+export const useGetMarkets = () =>
   useQuery<AxiosResponse<MarketResponse[]>>({
     queryKey: ["markets"],
     queryFn: () => API.get("api/mocks/v1/markets"),

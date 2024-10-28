@@ -4,6 +4,7 @@ import { createContext, PropsWithChildren, useContext, useEffect, useState } fro
 import { IFreighterContext } from "./types";
 import freighterApi from "@stellar/freighter-api";
 import { Horizon } from "@stellar/stellar-sdk";
+import { API } from "@/api/api";
 
 const FreighterContext = createContext<IFreighterContext | undefined>(undefined);
 
@@ -39,6 +40,8 @@ const useFreighter = (): IFreighterContext => {
       setStatus(address ? "connected" : "disconnected");
       setAddress(address);
       setNetwork({ network, networkPassphrase });
+      //temp mock
+      API.defaults.headers.common["Authorization"] = address;
     });
 
     return () => watcher.stop();

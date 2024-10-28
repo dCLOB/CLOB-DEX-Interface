@@ -24,16 +24,10 @@ class UserService {
     return newUser;
   }
 
-  deposit(address: string, token: string, amount: number) {
+  addBalance(address: string, token: string, amount: number) {
     const user = this.getOrCreateUser(address);
     const currentBalance = user.balance[token];
     user.balance[token] = currentBalance + amount;
-  }
-
-  withdraw(address: string, token: string, amount: number) {
-    const user = this.getOrCreateUser(address);
-    const currentBalance = user.balance[token];
-    user.balance[token] = currentBalance - amount;
   }
 }
 
