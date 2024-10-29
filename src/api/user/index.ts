@@ -4,13 +4,16 @@ import { API } from "../api";
 import { AxiosResponse } from "axios";
 import { UserData } from "@/app/api/mocks/services/users";
 import { DepositData } from "@/api/user/types";
+import { useFreighterContext } from "@/providers/FreighterProvider";
 
-export const useGetBalance = (address?: string) =>
-  useQuery<AxiosResponse<UserData>>({
+export const useGetBalance = () => {
+  const { isConnected, address } = useFreighterContext();
+  return useQuery<AxiosResponse<UserData>>({
     queryKey: ["balance", address],
     queryFn: () => API.get("api/mocks/v1/user/balance"),
-    enabled: Boolean(address),
+    enabled: isConnected,
   });
+};
 
 export const useDeposit = () =>
   useMutation({

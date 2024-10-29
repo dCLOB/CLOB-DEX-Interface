@@ -37,11 +37,12 @@ const useFreighter = (): IFreighterContext => {
     setStatus("connecting");
     const watcher = new freighterApi.WatchWalletChanges(1000);
     watcher.watch(({ address, network, networkPassphrase }) => {
+      //temp mock
+      API.defaults.headers.common["Authorization"] = address;
+      //
       setStatus(address ? "connected" : "disconnected");
       setAddress(address);
       setNetwork({ network, networkPassphrase });
-      //temp mock
-      API.defaults.headers.common["Authorization"] = address;
     });
 
     return () => watcher.stop();

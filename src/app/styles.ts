@@ -6,4 +6,5 @@ export const StyledContainer = styled("div")(({ theme }) => ({
   gap: theme.spacing(1),
   padding: theme.spacing(1, 2),
   height: "100%",
+  overflow: "auto",
 }));

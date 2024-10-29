@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
   const user: UserData = userService.getOrCreateUser(address);
   const orderData = await request.json();
   const order: Order = orderService.createOrder(orderData, user);
-  console.log(orderData, order, orderData.amount * orderData.price);
   userService.addBalance(
     user.address,
     getCurrenciesFromPair(orderData.pair).quoteCurrency,

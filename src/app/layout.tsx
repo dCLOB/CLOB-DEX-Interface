@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="sds-theme-dark">
+      <body>
         <Providers>
           <LayoutMain>{children}</LayoutMain>
         </Providers>

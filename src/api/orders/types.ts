@@ -8,11 +8,13 @@ export interface Order {
   side: OrderSide;
   price: number;
   amount: number;
+  filled: number; // filled amount;
   type: OrderType;
   userId: string;
   status: OrderStatus;
   createdAt: string;
   updatedAt: string;
+  active: boolean; // active
 }
 
 export type OrderCreateData = Pick<Order, "pair" | "side" | "price" | "amount" | "type">;

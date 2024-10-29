@@ -7,7 +7,6 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schema } from "./validationSchema";
 import { useGetBalance, useWithdraw } from "@/api/user";
-import { useFreighterContext } from "@/providers/FreighterProvider";
 import { LoadingButton } from "@mui/lab";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
@@ -20,8 +19,7 @@ interface WithdrawProps {
 export const Withdraw = ({ onClose }: WithdrawProps) => {
   const [token, setToken] = useState(TOKENS[0]);
 
-  const { address } = useFreighterContext();
-  const { data } = useGetBalance(address);
+  const { data } = useGetBalance();
 
   const balance = data?.data.balance[token] ?? 0;
 

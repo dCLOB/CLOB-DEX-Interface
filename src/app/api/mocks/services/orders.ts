@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { Order, OrderCreateData, OrderStatus } from "@/api/orders/types";
+import { Order, OrderCreateData } from "@/api/orders/types";
 
 export interface UserData {
   id: string;
@@ -8,8 +8,6 @@ export interface UserData {
     [key: string]: number;
   };
 }
-
-const openStatuses: OrderStatus[] = ["open", "partiallyFilled"];
 
 class OrderService {
   orders: Order[];
@@ -26,6 +24,8 @@ class OrderService {
       createdAt: new Date().toJSON(),
       updatedAt: new Date().toJSON(),
       status: "open",
+      filled: 0,
+      active: true,
     };
 
     this.orders.push(order);
@@ -34,11 +34,11 @@ class OrderService {
   }
 
   getOpenOrders() {
-    return this.orders.filter((order) => openStatuses.includes(order.status));
+    return this.orders.filter((order) => order.active);
   }
 
   getClosedOrders() {
-    return this.orders.filter((order) => !openStatuses.includes(order.status));
+    return this.orders.filter((order) => !order.active);
   }
 
   getUserOpenOrders(user: UserData) {
@@ -47,6 +47,15 @@ class OrderService {
 
   getUserClosedOrders(user: UserData) {
     return this.getOpenOrders().filter((order) => order.userId === user.id);
+  }
+
+  cancelOrder(id: Order["id"]) {
+    const order = this.orders.find((order) => order.id === id);
+    if (!order) throw new Error("not found");
+
+    order.status = "canceled";
+    order.active = false;
+    order.updatedAt = new Date().toJSON();
   }
 }
 

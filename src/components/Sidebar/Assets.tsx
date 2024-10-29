@@ -1,7 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import { CurrencyRow } from "@/components/CurrencyRow";
 import { useGetBalance } from "@/api/user";
-import { useFreighterContext } from "@/providers/FreighterProvider";
 import usePairStore from "@/stores/pair";
 import { getCurrenciesFromPair } from "@/utils";
 import { useState } from "react";
@@ -11,8 +10,7 @@ import { Withdraw } from "@/components/Withdraw";
 export const Assets = () => {
   const pair = usePairStore((state) => state.pair);
 
-  const { address } = useFreighterContext();
-  const { data } = useGetBalance(address);
+  const { data } = useGetBalance();
 
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(pair);
 

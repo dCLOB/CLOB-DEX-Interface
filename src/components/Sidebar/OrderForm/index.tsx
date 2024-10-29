@@ -1,5 +1,5 @@
 "use client";
-import { Box, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Tab, Tabs, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { TextField } from "@/components/TextField";
 import usePairStore from "@/stores/pair";
@@ -13,13 +13,17 @@ import { useFreighterContext } from "@/providers/FreighterProvider";
 import { useGetMarkets } from "@/api/markets";
 import { formatDecimal } from "@/utils/formatters/number";
 import { LoadingButton } from "@mui/lab";
-import { useCreateOrder } from "@/api/orders";
+import { useCreateOrder, useGetOpenOrders } from "@/api/orders";
 import { OrderSide, OrderType } from "@/api/orders/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
+import { ConnectWallet } from "@/components/ConnectWallet";
 
 export const OrderForm = () => {
-  const { address } = useFreighterContext();
+  const { isConnected } = useFreighterContext();
+
+  const { data: ordersData } = useGetOpenOrders();
+  const hasOrders = Boolean(ordersData?.data.length);
 
   const pair = usePairStore((state) => state.pair);
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(pair);
@@ -27,14 +31,13 @@ export const OrderForm = () => {
   const { data: marketsData } = useGetMarkets();
   const lastPrice = marketsData?.data?.find((market) => market.id === pair)?.lastPrice ?? 1;
 
-  const { data: balanceData } = useGetBalance(address);
+  const { data: balanceData } = useGetBalance();
   const balance = balanceData?.data.balance[quoteCurrency] ?? 0;
 
   const maxSellBuy = balance / lastPrice;
 
-  const { control, handleSubmit, trigger, formState, getFieldState, watch, reset } = useForm({
+  const { control, handleSubmit, trigger, formState, getFieldState, watch, reset, clearErrors } = useForm({
     mode: "onChange",
-    reValidateMode: "onChange",
     defaultValues: {
       type: "limit",
       price: "",
@@ -57,9 +60,16 @@ export const OrderForm = () => {
   const [side, setSide] = useState<OrderSide>("buy");
 
   const onSubmit =
-    (side: OrderSide) =>
+    (side: OrderSide, checkFee?: boolean) =>
     async ({ type, price, amount }: { type?: string; price?: string; amount?: string }) => {
       setSide(side);
+
+      if (checkFee) {
+        setNetworkFeeDialogOpen(true);
+        return;
+      }
+      setNetworkFeeDialogOpen(false);
+
       await createOrder({
         side,
         type: type as OrderType,
@@ -69,8 +79,12 @@ export const OrderForm = () => {
       });
       enqueueSnackbar("You have created an order", { variant: "success" });
       reset({ type, price: "", amount: "" }, { keepErrors: false, keepTouched: false });
-      queryClient.refetchQueries({ queryKey: ["balance"] }); //TODO open orders refetch
+      clearErrors();
+      queryClient.refetchQueries({ queryKey: ["orders"] });
+      queryClient.refetchQueries({ queryKey: ["balance"] });
     };
+
+  const [networkFeeDialogOpen, setNetworkFeeDialogOpen] = useState(false);
 
   return (
     <form>
@@ -128,30 +142,38 @@ export const OrderForm = () => {
 
         <CurrencyRow title="Fee" value={0} token={quoteCurrency} />
 
-        <Box display="flex" gap={2} justifyItems="space-between" paddingY={1}>
-          <LoadingButton
-            variant="contained"
-            color="success"
-            fullWidth
-            size="small"
-            disabled={!formState.isValid || isPending}
-            onClick={handleSubmit(onSubmit("buy"))}
-            loading={isPending && side === "buy"}
-          >
-            Buy/Long
-          </LoadingButton>
-          <LoadingButton
-            variant="contained"
-            color="error"
-            fullWidth
-            size="small"
-            disabled={!formState.isValid || isPending}
-            onClick={handleSubmit(onSubmit("sell"))}
-            loading={isPending && side === "sell"}
-          >
-            Sell/Short
-          </LoadingButton>
-        </Box>
+        {isConnected && (
+          <Box display="flex" gap={2} justifyItems="space-between" paddingY={1}>
+            <LoadingButton
+              variant="contained"
+              color="success"
+              fullWidth
+              size="small"
+              disabled={!formState.isValid || isPending}
+              onClick={handleSubmit(onSubmit("buy", !hasOrders))}
+              loading={isPending && side === "buy"}
+            >
+              Buy/Long
+            </LoadingButton>
+            <LoadingButton
+              variant="contained"
+              color="error"
+              fullWidth
+              size="small"
+              disabled={!formState.isValid || isPending}
+              onClick={handleSubmit(onSubmit("sell", !hasOrders))}
+              loading={isPending && side === "sell"}
+            >
+              Sell/Short
+            </LoadingButton>
+          </Box>
+        )}
+
+        {!isConnected && (
+          <Box display="flex" justifyItems="center" paddingY={1}>
+            <ConnectWallet />
+          </Box>
+        )}
 
         <Box display="flex" justifyContent="space-between" gap={2}>
           <Box display="flex" flexDirection="column">
@@ -178,6 +200,23 @@ export const OrderForm = () => {
           </Box>
         </Box>
       </Box>
+
+      {networkFeeDialogOpen && (
+        <Dialog open onClose={() => setNetworkFeeDialogOpen(false)}>
+          <DialogTitle>Network fee</DialogTitle>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Typography variant="body2">You must pay the network fee 1 XLM one time</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button color="error" onClick={() => setNetworkFeeDialogOpen(false)}>
+              Cancel
+            </Button>
+            <LoadingButton color="success" onClick={handleSubmit(onSubmit(side))}>
+              Pay
+            </LoadingButton>
+          </DialogActions>
+        </Dialog>
+      )}
     </form>
   );
 };
