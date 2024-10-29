@@ -3,6 +3,7 @@ import { Box, Card, Tabs, Tab } from "@mui/material";
 import React, { useState } from "react";
 
 import { OpenOrders } from "@/components/Orders/OpenOrders";
+import { OrderHistory } from "@/components/Orders/OrderHistory";
 
 export const Orders = () => {
   const [currentTab, setCurrentTab] = useState("openOrders");
@@ -20,9 +21,10 @@ export const Orders = () => {
       >
         <Tabs indicatorColor="secondary" textColor="secondary" value={currentTab} onChange={(e, v) => setCurrentTab(v)}>
           <Tab label="Open Orders" value="openOrders" />
-          <Tab label="Orders History" value="market" />
+          <Tab label="Order History" value="orderHistory" />
         </Tabs>
         {currentTab === "openOrders" && <OpenOrders />}
+        {currentTab === "orderHistory" && <OrderHistory />}
       </Box>
     </Card>
   );

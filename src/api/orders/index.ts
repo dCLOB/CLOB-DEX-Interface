@@ -23,3 +23,13 @@ export const useCancelOrder = () =>
   useMutation({
     mutationFn: (id: Order["id"]) => API.delete(`api/mocks/v1/orders/${id}`),
   });
+
+export const useGetOrderHistory = () => {
+  const { isConnected } = useFreighterContext();
+
+  return useQuery<AxiosResponse<Order[]>>({
+    queryKey: ["order-history"],
+    queryFn: () => API.get("api/mocks/v1/orders/history"),
+    enabled: isConnected,
+  });
+};

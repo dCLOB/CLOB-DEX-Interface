@@ -1,15 +1,12 @@
-import { Box, Card, TableCell, Typography, IconButton } from "@mui/material";
+import { Box, Card, TableCell, Typography } from "@mui/material";
 import { ITableColumn, Table } from "@/components/Table";
-import { useCancelOrder, useGetOpenOrders } from "@/api/orders";
+import { useGetOrderHistory } from "@/api/orders";
 import { Order } from "@/api/orders/types";
 import { useCallback } from "react";
 import { getCurrenciesFromPair } from "@/utils";
 import { formatDecimal } from "@/utils/formatters/number";
 import { formatPair, getOrderStatusColor, getOrderStatusLabel } from "@/components/Orders/utils";
 import { formatDateTime } from "@/utils/formatters/date";
-import CancelIcon from "@mui/icons-material/Cancel";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSnackbar } from "notistack";
 
 const COLUMNS: ITableColumn[] = [
   { name: "Pair" },
@@ -17,25 +14,13 @@ const COLUMNS: ITableColumn[] = [
   { name: "Amount", align: "right" },
   { name: "Filled", align: "right" },
   { name: "Price", align: "right" },
+  { name: "Average Price", align: "right" },
   { name: "Status" },
-  { name: "Placed" },
-  { name: "Action" },
+  { name: "Inactive" },
 ];
 
 const OrderRow = ({ row }: { row: Order }) => {
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(row.pair);
-
-  const { mutateAsync: cancelOrder } = useCancelOrder();
-  const queryClient = useQueryClient();
-  const { enqueueSnackbar } = useSnackbar();
-
-  const handleCancel = async () => {
-    await cancelOrder(row.id);
-    enqueueSnackbar("Order canceled", { variant: "success" });
-    queryClient.refetchQueries({ queryKey: ["orders"] });
-    queryClient.refetchQueries({ queryKey: ["order-history"] });
-    queryClient.refetchQueries({ queryKey: ["balance"] });
-  };
 
   return (
     <>
@@ -69,6 +54,12 @@ const OrderRow = ({ row }: { row: Order }) => {
         </Typography>
       </TableCell>
 
+      <TableCell align="right">
+        <Typography variant="caption">
+          {row.type === "market" ? "-" : `${formatDecimal(row.price)} ${quoteCurrency}`}
+        </Typography>
+      </TableCell>
+
       <TableCell>
         <Typography variant="caption" color={getOrderStatusColor(row.status)}>
           {getOrderStatusLabel(row.status)}
@@ -76,20 +67,14 @@ const OrderRow = ({ row }: { row: Order }) => {
       </TableCell>
 
       <TableCell>
-        <Typography variant="caption">{formatDateTime(row.createdAt)}</Typography>
-      </TableCell>
-
-      <TableCell>
-        <IconButton size="small" onClick={handleCancel}>
-          <CancelIcon />
-        </IconButton>
+        <Typography variant="caption">{formatDateTime(row.updatedAt)}</Typography>
       </TableCell>
     </>
   );
 };
 
-export const OpenOrders = () => {
-  const { data } = useGetOpenOrders();
+export const OrderHistory = () => {
+  const { data } = useGetOrderHistory();
 
   const orders = data?.data ?? [];
 

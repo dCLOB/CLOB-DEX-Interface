@@ -15,6 +15,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   active: boolean; // active
+  averagePrice: number; // for filled order
 }
 
 export type OrderCreateData = Pick<Order, "pair" | "side" | "price" | "amount" | "type">;

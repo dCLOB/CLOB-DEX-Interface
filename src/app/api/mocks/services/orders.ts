@@ -26,6 +26,7 @@ class OrderService {
       status: "open",
       filled: 0,
       active: true,
+      averagePrice: 0,
     };
 
     this.orders.push(order);
@@ -46,7 +47,7 @@ class OrderService {
   }
 
   getUserClosedOrders(user: UserData) {
-    return this.getOpenOrders().filter((order) => order.userId === user.id);
+    return this.getClosedOrders().filter((order) => order.userId === user.id);
   }
 
   cancelOrder(id: Order["id"]) {
