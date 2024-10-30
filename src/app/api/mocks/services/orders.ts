@@ -58,6 +58,27 @@ class OrderService {
     order.active = false;
     order.updatedAt = new Date().toJSON();
   }
+
+  getOrderbook(pair: string) {
+    const pairOpenOrders = this.orders.filter((order) => order.pair === pair && order.active);
+    const sellOrders = pairOpenOrders
+      .filter((order) => order.side === "sell")
+      .reverse()
+      .slice(0, 5);
+    const buyOrders = pairOpenOrders
+      .filter((order) => order.side === "buy")
+      .reverse()
+      .slice(0, 5);
+
+    return {
+      sell: sellOrders
+        .sort((a, b) => b.price - a.price)
+        .map(({ price, amount }) => ({ price, amount, total: price * amount })),
+      buy: buyOrders
+        .sort((a, b) => b.price - a.price)
+        .map(({ price, amount }) => ({ price, amount, total: price * amount })),
+    };
+  }
 }
 
 export const orderService = new OrderService();

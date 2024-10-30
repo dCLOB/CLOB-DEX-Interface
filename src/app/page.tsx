@@ -4,6 +4,7 @@ import { StyledContainer } from "./styles";
 import { Sidebar } from "@/components/Sidebar";
 import { TradingData } from "@/components/TradingData";
 import { Orders } from "@/components/Orders";
+import { OrderBook } from "@/components/OrderBook";
 
 export default function HomePage() {
   return (
@@ -12,7 +13,7 @@ export default function HomePage() {
         <TradingData />
         <Box height={300} display="flex" gap={1}>
           <Card variant="outlined" sx={{ flex: 1 }} />
-          <Card variant="outlined" sx={{ flex: "0 1 200px" }} />
+          <OrderBook />
         </Box>
         <Orders />
       </Box>

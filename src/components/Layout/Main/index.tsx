@@ -8,7 +8,7 @@ const MainContainer = styled(Box)({
   gridTemplateColumnt: "1fr",
   gridTemplateRows: "auto 1fr",
   height: "100vh",
-  overflow: "hidden",
+  overflow: "auto",
   minHeight: 0,
   minWidth: 0,
 });

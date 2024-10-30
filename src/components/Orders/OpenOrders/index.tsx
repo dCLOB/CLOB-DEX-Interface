@@ -19,7 +19,7 @@ const COLUMNS: ITableColumn[] = [
   { name: "Price", align: "right" },
   { name: "Status" },
   { name: "Placed" },
-  { name: "Action" },
+  { name: "" },
 ];
 
 const OrderRow = ({ row }: { row: Order }) => {
@@ -79,7 +79,7 @@ const OrderRow = ({ row }: { row: Order }) => {
         <Typography variant="caption">{formatDateTime(row.createdAt)}</Typography>
       </TableCell>
 
-      <TableCell>
+      <TableCell align="right">
         <IconButton size="small" onClick={handleCancel}>
           <CancelIcon />
         </IconButton>

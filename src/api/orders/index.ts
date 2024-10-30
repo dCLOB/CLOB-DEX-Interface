@@ -10,10 +10,10 @@ export const useCreateOrder = () =>
   });
 
 export const useGetOpenOrders = () => {
-  const { isConnected } = useFreighterContext();
+  const { isConnected, address } = useFreighterContext();
 
   return useQuery<AxiosResponse<Order[]>>({
-    queryKey: ["orders"],
+    queryKey: ["orders", address],
     queryFn: () => API.get("api/mocks/v1/orders"),
     enabled: isConnected,
   });
@@ -25,10 +25,10 @@ export const useCancelOrder = () =>
   });
 
 export const useGetOrderHistory = () => {
-  const { isConnected } = useFreighterContext();
+  const { isConnected, address } = useFreighterContext();
 
   return useQuery<AxiosResponse<Order[]>>({
-    queryKey: ["order-history"],
+    queryKey: ["order-history", address],
     queryFn: () => API.get("api/mocks/v1/orders/history"),
     enabled: isConnected,
   });
