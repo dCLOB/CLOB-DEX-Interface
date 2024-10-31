@@ -170,7 +170,7 @@ export const OrderForm = () => {
         )}
 
         {!isConnected && (
-          <Box display="flex" justifyItems="center" paddingY={1}>
+          <Box display="flex" justifyContent="center" paddingY={1}>
             <ConnectWallet />
           </Box>
         )}

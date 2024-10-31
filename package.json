@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix"
+    "lint:fix": "next lint --fix",
+    "start:local": "npm ci && next build && next start"
   },
   "dependencies": {
     "@emotion/cache": "^11.13.1",

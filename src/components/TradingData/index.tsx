@@ -20,7 +20,7 @@ export const TradingData = () => {
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(activePair?.id);
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={{ height: 76 }}>
       {activePair && (
         <Box display="flex" alignItems="center" gap={3} height="100%" padding={2}>
           <PairDropdown />

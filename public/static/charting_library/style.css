@@ -1,0 +1,27 @@
+.theme-dark:root {
+  --tv-color-pane-background: #121212;
+  --tv-color-platform-background: #121212;
+  --tv-color-toolbar-button-text-active: #ce93d8;
+  --tv-color-toolbar-button-text-active-hover: #ce93d8;
+  --tv-color-toolbar-toggle-button-background-active: #ce93d8;
+  --tv-color-toolbar-toggle-button-background-active-hover: #ce93d8;
+  --tv-color-popup-background: #212121;
+}
+
+
+/*--tv-color-platform-background — the main color of the page where all elements are placed on
+--tv-color-pane-background — toolbar background color
+--tv-color-toolbar-button-background-hover — hover effect color for a toolbar button
+--tv-color-toolbar-button-background-expanded — hover effect color for the active button on the right toolbar
+--tv-color-toolbar-button-background-active — background color for the active button on the right toolbar
+--tv-color-toolbar-button-background-active-hover — background color for the active button on the right toolbar when hovering over it
+--tv-color-toolbar-button-text — text and icon color for toolbar buttons
+--tv-color-toolbar-button-text-hover — text and icon color for toolbar buttons when hovering over them
+--tv-color-toolbar-button-text-active — text and icon color for toolbar buttons that are active
+--tv-color-toolbar-button-text-active-hover — text and icon color for toolbar buttons that are active when hovering over them
+--tv-color-item-active-text — text color for toggle toolbar buttons (e.g. Magnet Mode, Lock All Drawings)
+--tv-color-toolbar-toggle-button-background-active — fill color for toggle toolbar buttons (e.g. Magnet Mode, Lock All Drawings)
+--tv-color-toolbar-toggle-button-background-active-hover — fill color for toggle toolbar buttons when hovering over them (e.g. Magnet Mode, Lock All Drawings)
+--tv-color-toolbar-divider-background — toolbar dividers color
+--tv-color-toolbar-save-layout-loader — loader color for toolbar save layout button
+*/
