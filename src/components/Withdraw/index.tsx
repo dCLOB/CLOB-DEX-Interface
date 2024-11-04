@@ -51,7 +51,7 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
   };
 
   return (
-    <Dialog open onClose={onClose}>
+    <Dialog open onClose={onClose} PaperProps={{ sx: { width: 360 } }}>
       <DialogTitle>Withdraw</DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -66,10 +66,10 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
               <TextField
                 withNumberMask
                 InputProps={{ endAdornment: token }}
-                helperText={fieldState.error?.message ?? "Enter the amount to withdraw"}
                 label="Amount"
                 {...field}
-                error={fieldState.invalid}
+                fieldState={fieldState}
+                helperText="Enter the amount to withdraw"
               />
             )}
           />

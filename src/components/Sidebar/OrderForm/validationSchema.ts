@@ -14,7 +14,13 @@ export const schema = yup
       .string()
       .test("is-positive-amount", "Enter the amount", (value = "") => parseFloat(value) > 0)
       .test("is-valid-amount", "Insufficient funds", (value = "", ctx) => {
-        return parseFloat(ctx.options.context?.maxSellBuy) > parseFloat(value);
+        const price = Number(
+          (ctx.parent.type === "market" ? ctx.options.context?.lastPrice : ctx.parent.price) ||
+            ctx.options.context?.lastPrice,
+        );
+        const balance = Number(ctx.options.context?.balance) || 0;
+
+        return balance / price >= parseFloat(value);
       })
       .required("Enter the amount"),
   })

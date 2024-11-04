@@ -50,7 +50,7 @@ export const Deposit = ({ onClose }: DepositProps) => {
   };
 
   return (
-    <Dialog open onClose={onClose}>
+    <Dialog open onClose={onClose} PaperProps={{ sx: { width: 360 } }}>
       <DialogTitle>Deposit</DialogTitle>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -65,10 +65,10 @@ export const Deposit = ({ onClose }: DepositProps) => {
               <TextField
                 withNumberMask
                 InputProps={{ endAdornment: token }}
-                helperText={fieldState.error?.message ?? "Please, set amount to deposit"}
                 label="Amount"
                 {...field}
-                error={fieldState.invalid}
+                fieldState={fieldState}
+                helperText="Please, set amount to deposit"
               />
             )}
           />

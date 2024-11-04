@@ -6,9 +6,20 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import { forwardRef, ChangeEvent } from "react";
+import { forwardRef, ChangeEvent, ReactNode } from "react";
 
 import { IMaskInput } from "react-imask";
+import { ControllerFieldState } from "react-hook-form";
+
+const mapFieldState = (
+  state: ControllerFieldState,
+  helperText?: ReactNode,
+): Pick<TextFieldProps, "error" | "helperText"> => {
+  return {
+    error: state.isDirty && state.invalid,
+    helperText: (state.isDirty && state.error?.message) || helperText,
+  };
+};
 
 const TextFieldMask = forwardRef<HTMLInputElement, InputBaseComponentProps>(function TextFieldMask(props, ref) {
   const { onChange, ...other } = props;
@@ -38,11 +49,14 @@ const TextFieldMask = forwardRef<HTMLInputElement, InputBaseComponentProps>(func
 
 export const TextField = ({
   InputProps,
-  helperText,
+  helperText = <>&nbsp;</>,
   withNumberMask = false,
   label,
+  fieldState,
   ...props
-}: Omit<TextFieldProps, "variant"> & { withNumberMask?: boolean }) => {
+}: Omit<TextFieldProps, "variant"> & { withNumberMask?: boolean; fieldState?: ControllerFieldState }) => {
+  const mappedFieldState = fieldState && mapFieldState(fieldState, helperText);
+
   return (
     <Box>
       <Typography variant="caption" color="textSecondary" fontWeight="bold">
@@ -53,8 +67,9 @@ export const TextField = ({
         variant="outlined"
         color="secondary"
         size="small"
-        helperText={helperText ?? <>&nbsp;</>}
+        helperText={helperText}
         {...props}
+        {...mappedFieldState}
         InputProps={{
           ...InputProps,
           ...(withNumberMask && { inputComponent: TextFieldMask }),
