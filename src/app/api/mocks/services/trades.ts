@@ -6,6 +6,7 @@ export interface Trade {
   sellOrderId: string;
   price: number;
   amount: number;
+  pair: string;
 }
 
 class TradeService {
@@ -28,6 +29,10 @@ class TradeService {
       orderTrades.reduce((total, trade) => total + trade.amount, 0);
 
     return averagePrice;
+  }
+
+  getPairTrades(pair: string) {
+    return this.trades.filter((trade) => trade.pair === pair);
   }
 }
 

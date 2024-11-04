@@ -167,6 +167,7 @@ class OrderService {
         buyOrderId: newOrder.side === "buy" ? newOrder.id : matchedOrder.id,
         amount: fillableAmount,
         price: matchedOrder.price,
+        pair: matchedOrder.pair,
       });
 
       newOrder.averagePrice = tradeService.calculateAveragePrice(newOrder);
