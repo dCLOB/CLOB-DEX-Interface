@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import { API } from "../api";
+import { API, REFETCH_INTERVAL } from "../api";
 import { AxiosResponse } from "axios";
 import { UserData } from "@/app/api/mocks/services/users";
 import { DepositData } from "@/api/user/types";
@@ -12,6 +12,7 @@ export const useGetBalance = () => {
     queryKey: ["balance", address],
     queryFn: () => API.get("api/mocks/v1/user/balance"),
     enabled: isConnected,
+    refetchInterval: REFETCH_INTERVAL,
   });
 };
 
