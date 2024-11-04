@@ -29,6 +29,10 @@ class UserService {
     const currentBalance = user.balance[token];
     user.balance[token] = currentBalance + amount;
   }
+
+  getUserById(id: string) {
+    return this.userData.find((user) => user.id === id);
+  }
 }
 
 export const userService = new UserService();

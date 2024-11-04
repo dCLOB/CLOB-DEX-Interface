@@ -1,5 +1,8 @@
 import { nanoid } from "nanoid";
 import { Order, OrderCreateData } from "@/api/orders/types";
+import { userService } from "@/app/api/mocks/services/users";
+import { getCurrenciesFromPair } from "@/utils";
+import { tradeService } from "@/app/api/mocks/services/trades";
 
 export interface UserData {
   id: string;
@@ -8,6 +11,12 @@ export interface UserData {
     [key: string]: number;
   };
 }
+
+const matchTypes = (a: Order, b: Order) => {
+  if (a.type === b.type) return 0;
+  if (a.type === "market") return -1;
+  return 1;
+};
 
 class OrderService {
   orders: Order[];
@@ -30,6 +39,8 @@ class OrderService {
     };
 
     this.orders.push(order);
+
+    this.matchOrders(order);
 
     return order;
   }
@@ -57,10 +68,21 @@ class OrderService {
     order.status = "canceled";
     order.active = false;
     order.updatedAt = new Date().toJSON();
+
+    const user = userService.getUserById(order.userId);
+    if (user)
+      userService.addBalance(
+        user.address,
+        getCurrenciesFromPair(order.pair).quoteCurrency,
+        (order.price as number) * order.amount,
+      );
   }
 
   getOrderbook(pair: string) {
-    const pairOpenOrders = this.orders.filter((order) => order.pair === pair && order.active);
+    const pairOpenOrders = this.orders.filter(
+      (order) => order.pair === pair && order.type !== "market" && order.active,
+    );
+
     const sellOrders = pairOpenOrders
       .filter((order) => order.side === "sell")
       .reverse()
@@ -73,11 +95,87 @@ class OrderService {
     return {
       sell: sellOrders
         .sort((a, b) => b.price - a.price)
-        .map(({ price, amount }) => ({ price, amount, total: price * amount })),
+        .map(({ price, amount, filled }) => ({
+          price,
+          amount: amount - filled,
+          total: price * (amount - filled),
+        })),
       buy: buyOrders
         .sort((a, b) => b.price - a.price)
-        .map(({ price, amount }) => ({ price, amount, total: price * amount })),
+        .map(({ price, amount, filled }) => ({
+          price,
+          amount: amount - filled,
+          total: price * (amount - filled),
+        })),
     };
+  }
+
+  matchOrders(newOrder: Order) {
+    console.log(
+      `start matching new order ${newOrder.id}, type: ${newOrder.type},  amount: ${newOrder.amount}, limit price: ${newOrder.price}`,
+    );
+
+    const matchedOrders = this.orders.filter(
+      (order) =>
+        order.active && // active order
+        order.pair === newOrder.pair && // same pair
+        order.side !== newOrder.side && // match buy with sell
+        (newOrder.type === "market" ? order.type !== "market" : true) && // prevent market-market
+        (newOrder.type === "limit"
+          ? newOrder.side === "buy"
+            ? order.price <= newOrder.price
+            : order.price >= newOrder.price
+          : true), // with appropriate price
+    );
+    if (!matchedOrders.length) console.log(`matched orders not fount for order ${newOrder.id}`);
+
+    // sort matched orders by priority
+    matchedOrders.sort(
+      (a, b) =>
+        matchTypes(a, b) || // market, then limit
+        (newOrder.side === "sell" ? b.price - a.price : a.price - b.price) || // sort by price
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(), // sort by time
+    );
+
+    matchedOrders.forEach((matchedOrder) => {
+      if (!newOrder.active) return; //filled by previous matched
+
+      console.log(
+        `fount matched order ${matchedOrder.id}, amount: ${matchedOrder.amount}, price: ${matchedOrder.price}`,
+      );
+      const fillableAmount = Math.min(newOrder.amount - newOrder.filled, matchedOrder.amount - matchedOrder.filled);
+      console.log(`fillable amount: ${fillableAmount}`);
+      newOrder.filled = newOrder.filled + fillableAmount;
+      const isNewOrderFilled = newOrder.filled === newOrder.amount;
+      newOrder.status = isNewOrderFilled ? "filled" : "partiallyFilled";
+      if (isNewOrderFilled) newOrder.active = false;
+
+      console.log(`new order is filled: ${newOrder.filled}, status: ${newOrder.status}, active: ${newOrder.active}`);
+      // TODO new order user balance
+
+      matchedOrder.filled = matchedOrder.filled + fillableAmount;
+      const isMatchedOrderFilled = matchedOrder.filled === matchedOrder.amount;
+      matchedOrder.status = isMatchedOrderFilled ? "filled" : "partiallyFilled";
+      if (isMatchedOrderFilled) matchedOrder.active = false;
+      console.log(
+        `matched order is filled: ${matchedOrder.filled}, status: ${matchedOrder.status}, active: ${matchedOrder.active}`,
+      );
+
+      tradeService.addTrade({
+        id: nanoid(),
+        sellOrderId: newOrder.side === "sell" ? newOrder.id : matchedOrder.id,
+        buyOrderId: newOrder.side === "buy" ? newOrder.id : matchedOrder.id,
+        amount: fillableAmount,
+        price: matchedOrder.price,
+      });
+
+      newOrder.averagePrice = tradeService.calculateAveragePrice(newOrder);
+      matchedOrder.averagePrice = tradeService.calculateAveragePrice(matchedOrder);
+
+      console.log("------------------------------------------------------");
+    });
+
+    console.log("======================================================");
   }
 }
 
