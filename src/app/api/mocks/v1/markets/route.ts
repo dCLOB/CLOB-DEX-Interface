@@ -1,21 +1,15 @@
 import { MarketResponse } from "@/api/markets/types";
-import { TRADING_PAIRS } from "@/constants";
+import { BASE_CURRENCY_RATIOS, TRADING_PAIRS } from "@/constants";
 import { tradeService } from "@/app/api/mocks/services/trades";
 
 export const dynamic = "force-dynamic";
-
-const BASE_CURRENCY_RATIOS = {
-  "USDC-XLM": 10.5,
-  "VELO-XLM": 0.9,
-  "RIO-XLM": 8.88,
-};
 
 export async function GET() {
   const response: MarketResponse[] = TRADING_PAIRS.map((pair) => {
     const trades = tradeService.getPairTrades(pair);
     const prices = trades.map((trade) => trade.price);
     const basePrice = BASE_CURRENCY_RATIOS[pair]; // used as 24h ago price for MOCK
-    const lastPrice = prices.at(-1) ?? basePrice;
+    const lastPrice = tradeService.getLatestPrice(pair);
 
     return {
       id: pair,

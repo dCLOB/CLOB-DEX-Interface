@@ -176,6 +176,25 @@ class OrderService {
       console.log("------------------------------------------------------");
     });
 
+    if (newOrder.type === "market" && newOrder.active) {
+      //close unfulfilled market order and create limit order for unfulfilled part
+      newOrder.active = false;
+      console.log(`marked order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
+
+      const newLimitOrder = this.createOrder(
+        {
+          pair: newOrder.pair,
+          side: newOrder.side,
+          price: tradeService.getLatestPrice(newOrder.pair),
+          amount: newOrder.amount - newOrder.filled,
+          type: "limit",
+        },
+        userService.getUserById(newOrder.id) as UserData,
+      );
+      console.log(`new limit order ${newLimitOrder.id} opened. amount: ${newOrder.amount}`);
+      this.matchOrders(newLimitOrder);
+    }
+
     console.log("======================================================");
   }
 }

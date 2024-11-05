@@ -1,4 +1,5 @@
 import { Order } from "@/api/orders/types";
+import { BASE_CURRENCY_RATIOS } from "@/constants";
 
 export interface Trade {
   id: string;
@@ -33,6 +34,10 @@ class TradeService {
 
   getPairTrades(pair: string) {
     return this.trades.filter((trade) => trade.pair === pair);
+  }
+
+  getLatestPrice(pair: string) {
+    return this.getPairTrades(pair).at(-1)?.price ?? BASE_CURRENCY_RATIOS[pair as keyof typeof BASE_CURRENCY_RATIOS];
   }
 }
 
