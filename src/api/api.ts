@@ -7,4 +7,4 @@ export const API = axios.create({
   },
 });
 
-export const REFETCH_INTERVAL = 1000 * 5; // every 5s
+export const REFETCH_INTERVAL = 1000 * 2; // every 2s
