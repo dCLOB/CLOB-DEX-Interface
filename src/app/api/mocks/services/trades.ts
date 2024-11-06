@@ -19,7 +19,9 @@ class TradeService {
   }
 
   addTrade(trade: Omit<Trade, "id" | "createdAt">) {
-    this.trades.push({ ...trade, id: nanoid(), createdAt: new Date().toJSON() });
+    const newTrade = { ...trade, id: nanoid(), createdAt: new Date().toJSON() };
+    this.trades.push(newTrade);
+    return newTrade;
   }
 
   getOrderTrades(orderId: string) {

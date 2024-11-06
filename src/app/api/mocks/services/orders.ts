@@ -179,13 +179,16 @@ class OrderService {
         `matched order is filled: ${matchedOrder.filled}, status: ${matchedOrder.status}, active: ${matchedOrder.active}`,
       );
 
-      tradeService.addTrade({
+      const trade = tradeService.addTrade({
         sellOrderId: newOrder.side === "sell" ? newOrder.id : matchedOrder.id,
         buyOrderId: newOrder.side === "buy" ? newOrder.id : matchedOrder.id,
         amount: fillableAmount,
         price: matchedOrder.price,
         pair: matchedOrder.pair,
       });
+
+      newOrder.updatedAt = trade.createdAt;
+      matchedOrder.updatedAt = trade.createdAt;
 
       newOrder.averagePrice = tradeService.calculateAveragePrice(newOrder.id);
       matchedOrder.averagePrice = tradeService.calculateAveragePrice(matchedOrder.id);
@@ -215,6 +218,7 @@ class OrderService {
     if (newOrder.type === "market" && newOrder.active) {
       //close unfulfilled market order and create limit order for unfulfilled part
       newOrder.active = false;
+      newOrder.updatedAt = new Date().toJSON();
       console.log(`marked order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
       const unfulfilledAmount = newOrder.amount - newOrder.filled;
       // return unfulfilled part to market order user
