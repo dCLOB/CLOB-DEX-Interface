@@ -136,6 +136,7 @@ class OrderService {
     const matchedOrders = this.orders.filter(
       (order) =>
         order.active && // active order
+        order.userId !== newOrder.userId && // from other users
         order.pair === newOrder.pair && // same pair
         order.side !== newOrder.side && // match buy with sell
         (newOrder.type === "market" ? order.type !== "market" : true) && // prevent market-market
