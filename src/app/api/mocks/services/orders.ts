@@ -99,7 +99,7 @@ class OrderService {
       userService.addBalance(
         user.address,
         getCurrenciesFromPair(order.pair).quoteCurrency,
-        (order.price as number) * order.amount,
+        (order.price as number) * (order.amount - order.filled),
       );
   }
 
