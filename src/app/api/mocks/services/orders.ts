@@ -162,7 +162,6 @@ class OrderService {
       );
 
       tradeService.addTrade({
-        id: nanoid(),
         sellOrderId: newOrder.side === "sell" ? newOrder.id : matchedOrder.id,
         buyOrderId: newOrder.side === "buy" ? newOrder.id : matchedOrder.id,
         amount: fillableAmount,

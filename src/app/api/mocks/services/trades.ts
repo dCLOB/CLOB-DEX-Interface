@@ -1,5 +1,6 @@
 import { Order } from "@/api/orders/types";
 import { BASE_CURRENCY_RATIOS } from "@/constants";
+import { nanoid } from "nanoid";
 
 export interface Trade {
   id: string;
@@ -8,6 +9,7 @@ export interface Trade {
   price: number;
   amount: number;
   pair: string;
+  createdAt: string;
 }
 
 class TradeService {
@@ -17,8 +19,8 @@ class TradeService {
     this.trades = [];
   }
 
-  addTrade(trade: Trade) {
-    this.trades.push(trade);
+  addTrade(trade: Omit<Trade, "id" | "createdAt">) {
+    this.trades.push({ ...trade, id: nanoid(), createdAt: new Date().toJSON() });
   }
 
   calculateAveragePrice(order: Order) {
