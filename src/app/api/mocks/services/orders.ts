@@ -12,11 +12,21 @@ export interface UserData {
   };
 }
 
+interface Orderbook {
+  sell: Record<number, number>;
+  buy: Record<number, number>;
+}
+
 const matchTypes = (a: Order, b: Order) => {
   if (a.type === b.type) return 0;
   if (a.type === "market") return -1;
   return 1;
 };
+
+const getOrderbookValues = (values: Record<number, number>) =>
+  Object.entries(values)
+    .sort((a, b) => Number(b[0]) - Number(a[0]))
+    .map(([price, amount]) => ({ price: Number(price), amount, total: Number(price) * amount }));
 
 class OrderService {
   orders: Order[];
@@ -98,30 +108,23 @@ class OrderService {
       (order) => order.pair === pair && order.type !== "market" && order.active,
     );
 
-    const sellOrders = pairOpenOrders
-      .filter((order) => order.side === "sell")
-      .reverse()
-      .slice(0, 5);
-    const buyOrders = pairOpenOrders
-      .filter((order) => order.side === "buy")
-      .reverse()
-      .slice(0, 5);
+    const orderbook = pairOpenOrders.reduce(
+      (orderbook, order) => {
+        const unfilledAmount = order.amount - order.filled;
+        const orderBookAmount = orderbook[order.side][order.price];
+        if (orderbook[order.side][order.price] !== undefined) {
+          orderbook[order.side][order.price] = orderBookAmount + unfilledAmount;
+        } else {
+          orderbook[order.side][order.price] = unfilledAmount;
+        }
+        return orderbook;
+      },
+      { sell: {}, buy: {} } as Orderbook,
+    );
 
     return {
-      sell: sellOrders
-        .sort((a, b) => b.price - a.price)
-        .map(({ price, amount, filled }) => ({
-          price,
-          amount: amount - filled,
-          total: price * (amount - filled),
-        })),
-      buy: buyOrders
-        .sort((a, b) => b.price - a.price)
-        .map(({ price, amount, filled }) => ({
-          price,
-          amount: amount - filled,
-          total: price * (amount - filled),
-        })),
+      sell: getOrderbookValues(orderbook.sell),
+      buy: getOrderbookValues(orderbook.buy),
     };
   }
 
@@ -170,7 +173,6 @@ class OrderService {
       if (isNewOrderFilled) newOrder.active = false;
 
       console.log(`new order is filled: ${newOrder.filled}, status: ${newOrder.status}, active: ${newOrder.active}`);
-      // TODO new order user balance
 
       matchedOrder.filled = matchedOrder.filled + fillableAmount;
       const isMatchedOrderFilled = matchedOrder.filled === matchedOrder.amount;
