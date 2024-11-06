@@ -21,19 +21,22 @@ export async function GET(request: NextRequest) {
   const t = Array.from({ length: countback }, (v, i) => to - resolution * 60 * i).reverse();
 
   const history = t.map((tItem, i) => {
-    let periodTrades = trades.filter(
+    const periodTrades = trades.filter(
       (trade) =>
         dayjs(trade.createdAt).isAfter(dayjs.unix(tItem)) &&
         (t[i] ? dayjs(trade.createdAt).isBefore(dayjs.unix(t[i + 1])) : true),
     );
-    if (!periodTrades.length)
-      periodTrades = trades.filter((trade) => dayjs(trade.createdAt).isBefore(dayjs.unix(tItem)));
+
+    const lastPrice = tradeService.getLatestPrice(symbol);
+
+    const firstTrade = dayjs(tradeService.getPairTrades(symbol).at(0)?.createdAt).unix();
+    const lastPriceFixed = tItem >= firstTrade ? lastPrice : BASE_CURRENCY_RATIOS[symbol];
 
     return {
-      c: periodTrades.at(-1)?.price ?? BASE_CURRENCY_RATIOS[symbol],
-      o: periodTrades.at(1)?.price ?? BASE_CURRENCY_RATIOS[symbol],
-      h: periodTrades.length ? Math.max(...periodTrades.map((trade) => trade.price)) : BASE_CURRENCY_RATIOS[symbol],
-      l: periodTrades.length ? Math.min(...periodTrades.map((trade) => trade.price)) : BASE_CURRENCY_RATIOS[symbol],
+      c: periodTrades.at(-1)?.price ?? lastPriceFixed,
+      o: periodTrades.at(0)?.price ?? lastPriceFixed,
+      h: periodTrades.length ? Math.max(...periodTrades.map((trade) => trade.price)) : lastPriceFixed,
+      l: periodTrades.length ? Math.min(...periodTrades.map((trade) => trade.price)) : lastPriceFixed,
       v: periodTrades.reduce((v, trade) => v + trade.amount * trade.price, 0),
     };
   });
