@@ -55,9 +55,7 @@ const OrderRow = ({ row }: { row: Order }) => {
       </TableCell>
 
       <TableCell align="right">
-        <Typography variant="caption">
-          {row.type === "market" ? "-" : `${formatDecimal(row.price)} ${quoteCurrency}`}
-        </Typography>
+        <Typography variant="caption">{`${formatDecimal(row.averagePrice)} ${quoteCurrency}`}</Typography>
       </TableCell>
 
       <TableCell>
