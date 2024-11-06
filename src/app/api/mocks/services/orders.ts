@@ -36,9 +36,24 @@ class OrderService {
       filled: 0,
       active: true,
       averagePrice: 0,
+      price: data.type === "market" ? tradeService.getLatestPrice(data.pair) : data.price, // store current price in market order for future calculations
     };
 
     this.orders.push(order);
+
+    console.log("#####################################");
+    console.log(
+      `order created ${order.id}, pair: ${order.pair}, type: ${order.type}, side: ${order.side}, amount: ${order.amount}, price: ${order.price}`,
+    );
+
+    const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
+    const token = order.side === "sell" ? baseCurrency : quoteCurrency;
+    const value = (order.side === "sell" ? order.amount : order.amount * order.price) * -1;
+
+    userService.addBalance(user.address, token, value);
+    console.log(`balance adjusted ${order.id}, user: ${user.address}, balance ${value} ${token}`);
+
+    console.log("#####################################");
 
     this.matchOrders(order);
 
@@ -115,6 +130,9 @@ class OrderService {
       `start matching new order ${newOrder.id}, type: ${newOrder.type},  amount: ${newOrder.amount}, limit price: ${newOrder.price}`,
     );
 
+    const newOrderUser = userService.getUserById(newOrder.userId) as UserData;
+    const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(newOrder.pair);
+
     const matchedOrders = this.orders.filter(
       (order) =>
         order.active && // active order
@@ -169,8 +187,27 @@ class OrderService {
         pair: matchedOrder.pair,
       });
 
-      newOrder.averagePrice = tradeService.calculateAveragePrice(newOrder);
-      matchedOrder.averagePrice = tradeService.calculateAveragePrice(matchedOrder);
+      newOrder.averagePrice = tradeService.calculateAveragePrice(newOrder.id);
+      matchedOrder.averagePrice = tradeService.calculateAveragePrice(matchedOrder.id);
+
+      userService.addBalance(
+        newOrderUser.address,
+        newOrder.side === "sell" ? quoteCurrency : baseCurrency,
+        newOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount,
+      );
+      console.log(
+        `balance adjusted ${newOrder.id}, user: ${newOrderUser.address}, balance ${newOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount} ${newOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
+      );
+
+      const matchedOrderUser = userService.getUserById(matchedOrder.userId) as UserData;
+      userService.addBalance(
+        matchedOrderUser.address,
+        matchedOrder.side === "sell" ? quoteCurrency : baseCurrency,
+        matchedOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount,
+      );
+      console.log(
+        `balance adjusted ${matchedOrder.id}, user: ${matchedOrderUser.address}, balance ${matchedOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount} ${matchedOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
+      );
 
       console.log("------------------------------------------------------");
     });
@@ -179,16 +216,33 @@ class OrderService {
       //close unfulfilled market order and create limit order for unfulfilled part
       newOrder.active = false;
       console.log(`marked order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
+      const unfulfilledAmount = newOrder.amount - newOrder.filled;
+      // return unfulfilled part to market order user
+      if (newOrder.side === "sell") {
+        userService.addBalance(newOrderUser.address, baseCurrency, unfulfilledAmount);
+        console.log(
+          `balance adjusted ${newOrderUser.id}, user: ${newOrderUser.address}, balance ${unfulfilledAmount} ${baseCurrency}`,
+        );
+      } else {
+        const orderTrades = tradeService.getOrderTrades(newOrder.id);
+        const diff =
+          newOrder.amount * newOrder.price -
+          orderTrades.reduce((total, trade) => total + trade.price * trade.amount, 0);
+        userService.addBalance(newOrderUser.address, quoteCurrency, diff);
+        console.log(
+          `balance adjusted ${newOrderUser.id}, user: ${newOrderUser.address}, balance ${diff} ${quoteCurrency}`,
+        );
+      }
 
       const newLimitOrder = this.createOrder(
         {
           pair: newOrder.pair,
           side: newOrder.side,
           price: tradeService.getLatestPrice(newOrder.pair),
-          amount: newOrder.amount - newOrder.filled,
+          amount: unfulfilledAmount,
           type: "limit",
         },
-        userService.getUserById(newOrder.id) as UserData,
+        newOrderUser,
       );
       console.log(`new limit order ${newLimitOrder.id} opened. amount: ${newOrder.amount}`);
       this.matchOrders(newLimitOrder);

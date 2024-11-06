@@ -1,4 +1,3 @@
-import { Order } from "@/api/orders/types";
 import { BASE_CURRENCY_RATIOS } from "@/constants";
 import { nanoid } from "nanoid";
 
@@ -23,10 +22,12 @@ class TradeService {
     this.trades.push({ ...trade, id: nanoid(), createdAt: new Date().toJSON() });
   }
 
-  calculateAveragePrice(order: Order) {
-    const orderTrades = this.trades.filter((trade) =>
-      order.side === "buy" ? trade.buyOrderId === order.id : trade.sellOrderId === order.id,
-    );
+  getOrderTrades(orderId: string) {
+    return this.trades.filter((trade) => trade.buyOrderId === orderId || trade.sellOrderId === orderId);
+  }
+
+  calculateAveragePrice(orderId: string) {
+    const orderTrades = this.getOrderTrades(orderId);
     const averagePrice =
       orderTrades.reduce((total, trade) => total + trade.amount * trade.price, 0) /
       orderTrades.reduce((total, trade) => total + trade.amount, 0);
