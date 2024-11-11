@@ -218,11 +218,11 @@ class OrderService {
       console.log("------------------------------------------------------");
     });
 
-    if (newOrder.type === "market" && newOrder.active) {
+    if (newOrder.active) {
       //close unfulfilled market order and create limit order for unfulfilled part
       newOrder.active = false;
       newOrder.updatedAt = new Date().toJSON();
-      console.log(`marked order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
+      console.log(`order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
       const unfulfilledAmount = newOrder.amount - newOrder.filled;
       // return unfulfilled part to market order user
       if (newOrder.side === "sell") {
