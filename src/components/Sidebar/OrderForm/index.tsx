@@ -19,6 +19,8 @@ import { useSnackbar } from "notistack";
 import { ConnectWallet } from "@/components/ConnectWallet";
 
 export const OrderForm = () => {
+  const [side, setSide] = useState<OrderSide>("buy");
+
   const { isConnected } = useFreighterContext();
 
   const { data: ordersData } = useGetOpenOrders();
@@ -31,9 +33,8 @@ export const OrderForm = () => {
   const lastPrice = marketsData?.data?.find((market) => market.id === pair)?.lastPrice ?? 1;
 
   const { data: balanceData } = useGetBalance();
-  const balance = balanceData?.data.balance[quoteCurrency] ?? 0;
 
-  const { control, handleSubmit, formState, watch, resetField, clearErrors } = useForm({
+  const { control, handleSubmit, watch, resetField, clearErrors, setError } = useForm({
     mode: "onChange",
     defaultValues: {
       type: "limit",
@@ -41,7 +42,6 @@ export const OrderForm = () => {
       amount: "",
     },
     resolver: yupResolver(schema),
-    context: { lastPrice, balance },
   });
 
   const type = watch("type");
@@ -50,12 +50,28 @@ export const OrderForm = () => {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [side, setSide] = useState<OrderSide>("buy");
+  const handleCreateOrder = (side: OrderSide) => {
+    setSide(side);
+    handleSubmit(onSubmit(hasOrders))();
+  };
 
   const onSubmit =
-    (side: OrderSide, checkFee?: boolean) =>
+    (checkFee?: boolean) =>
     async ({ type, price, amount }: { type?: string; price?: string; amount?: string }) => {
-      setSide(side);
+      //
+      // additional validation before submit
+      const balance = balanceData?.data.balance[side === "sell" ? baseCurrency : quoteCurrency] ?? 0;
+      if (side === "sell" && Number(amount) > balance) {
+        setError("amount", { type: "is-valid-amount", message: "Insufficient funds" });
+        return;
+      }
+
+      const actualPrice = Number(type === "market" ? lastPrice : Number(price)) || lastPrice;
+      if (side === "buy" && Number(amount) > balance / actualPrice) {
+        setError("amount", { type: "is-valid-amount", message: "Insufficient funds" });
+        return;
+      }
+      //
 
       if (checkFee) {
         setNetworkFeeDialogOpen(true);
@@ -143,8 +159,8 @@ export const OrderForm = () => {
               color="success"
               fullWidth
               size="small"
-              disabled={!formState.isValid || isPending}
-              onClick={handleSubmit(onSubmit("buy", !hasOrders))}
+              disabled={isPending}
+              onClick={() => handleCreateOrder("buy")}
               loading={isPending && side === "buy"}
             >
               Buy/Long
@@ -154,8 +170,8 @@ export const OrderForm = () => {
               color="error"
               fullWidth
               size="small"
-              disabled={!formState.isValid || isPending}
-              onClick={handleSubmit(onSubmit("sell", !hasOrders))}
+              disabled={isPending}
+              onClick={() => handleCreateOrder("sell")}
               loading={isPending && side === "sell"}
             >
               Sell/Short
@@ -205,7 +221,7 @@ export const OrderForm = () => {
             <Button color="error" onClick={() => setNetworkFeeDialogOpen(false)}>
               Cancel
             </Button>
-            <LoadingButton color="success" onClick={handleSubmit(onSubmit(side))}>
+            <LoadingButton color="success" onClick={handleSubmit(onSubmit())}>
               Pay
             </LoadingButton>
           </DialogActions>
