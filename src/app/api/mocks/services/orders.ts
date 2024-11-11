@@ -123,8 +123,8 @@ class OrderService {
     );
 
     return {
-      sell: getOrderbookValues(orderbook.sell),
-      buy: getOrderbookValues(orderbook.buy),
+      sell: getOrderbookValues(orderbook.sell).slice(0, 5),
+      buy: getOrderbookValues(orderbook.buy).slice(0, 5),
     };
   }
 
