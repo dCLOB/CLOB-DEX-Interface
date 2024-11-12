@@ -8,11 +8,11 @@ import { CurrencyRow } from "@/components/CurrencyRow";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schema } from "./validationSchema";
-import { useGetBalance } from "@/api/user";
+import { useGetBalance, useWithdraw } from "@/api/user";
 import { useFreighterContext } from "@/providers/FreighterProvider";
 import { useGetMarkets } from "@/api/markets";
 import { LoadingButton } from "@mui/lab";
-import { useCreateOrder, useGetOpenOrders } from "@/api/orders";
+import { useCreateOrder, useGetOpenOrders, useGetOrderHistory } from "@/api/orders";
 import { OrderSide, OrderType } from "@/api/orders/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
@@ -23,8 +23,9 @@ export const OrderForm = () => {
 
   const { isConnected } = useFreighterContext();
 
-  const { data: ordersData } = useGetOpenOrders();
-  const hasOrders = Boolean(ordersData?.data.length);
+  const { data: openOrdersData } = useGetOpenOrders();
+  const { data: orderHistoryData } = useGetOrderHistory();
+  const hasOrders = Boolean(openOrdersData?.data.length || orderHistoryData?.data.length);
 
   const pair = usePairStore((state) => state.pair);
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(pair);
@@ -34,7 +35,7 @@ export const OrderForm = () => {
 
   const { data: balanceData } = useGetBalance();
 
-  const { control, handleSubmit, watch, resetField, clearErrors, setError } = useForm({
+  const { control, handleSubmit, watch, resetField, clearErrors, setError, formState } = useForm({
     mode: "onChange",
     defaultValues: {
       type: "limit",
@@ -49,11 +50,6 @@ export const OrderForm = () => {
   const { mutateAsync: createOrder, isPending } = useCreateOrder();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
-
-  const handleCreateOrder = (side: OrderSide) => {
-    setSide(side);
-    handleSubmit(onSubmit(hasOrders))();
-  };
 
   const onSubmit =
     (checkFee?: boolean) =>
@@ -97,6 +93,18 @@ export const OrderForm = () => {
     };
 
   const [networkFeeDialogOpen, setNetworkFeeDialogOpen] = useState(false);
+
+  const handleCreateOrder = (side: OrderSide) => {
+    setSide(side);
+    handleSubmit(onSubmit(!hasOrders))();
+  };
+
+  const { mutateAsync: payFee, isPending: isPayFeePending } = useWithdraw();
+
+  const handlePayFee = async () => {
+    await payFee({ token: "XLM", amount: 1 });
+    handleSubmit(onSubmit())();
+  };
 
   return (
     <form>
@@ -159,7 +167,7 @@ export const OrderForm = () => {
               color="success"
               fullWidth
               size="small"
-              disabled={isPending}
+              disabled={!formState.isValid || isPending}
               onClick={() => handleCreateOrder("buy")}
               loading={isPending && side === "buy"}
             >
@@ -170,7 +178,7 @@ export const OrderForm = () => {
               color="error"
               fullWidth
               size="small"
-              disabled={isPending}
+              disabled={!formState.isValid || isPending}
               onClick={() => handleCreateOrder("sell")}
               loading={isPending && side === "sell"}
             >
@@ -221,7 +229,7 @@ export const OrderForm = () => {
             <Button color="error" onClick={() => setNetworkFeeDialogOpen(false)}>
               Cancel
             </Button>
-            <LoadingButton color="success" onClick={handleSubmit(onSubmit())}>
+            <LoadingButton color="success" onClick={handlePayFee} loading={isPayFeePending}>
               Pay
             </LoadingButton>
           </DialogActions>
