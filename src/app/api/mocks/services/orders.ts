@@ -222,6 +222,7 @@ class OrderService {
       //close unfulfilled market order and create limit order for unfulfilled part
       newOrder.active = false;
       newOrder.updatedAt = new Date().toJSON();
+      newOrder.status = newOrder.filled ? "partiallyFilled" : "canceled";
       console.log(`order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
       const unfulfilledAmount = newOrder.amount - newOrder.filled;
       // return unfulfilled part to market order user
