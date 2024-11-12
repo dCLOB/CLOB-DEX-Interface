@@ -8,6 +8,6 @@ export async function GET(request: NextRequest) {
   if (!address) return Response.json("", { status: 401 });
 
   const user: UserData = userService.getOrCreateUser(address);
-  const orders: Order[] = orderService.getUserClosedOrders(user);
+  const orders: Order[] = orderService.getUserClosedOrders(user).reverse();
   return Response.json(orders);
 }
