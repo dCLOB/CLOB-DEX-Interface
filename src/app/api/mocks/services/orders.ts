@@ -95,12 +95,16 @@ class OrderService {
     order.updatedAt = new Date().toJSON();
 
     const user = userService.getUserById(order.userId);
-    if (user)
-      userService.addBalance(
-        user.address,
-        getCurrenciesFromPair(order.pair).quoteCurrency,
-        (order.price as number) * (order.amount - order.filled),
-      );
+    const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
+    const unfulfilled = order.amount - order.filled;
+    userService.addBalance(
+      user!.address,
+      order.side === "sell" ? baseCurrency : quoteCurrency,
+      order.side === "sell" ? unfulfilled : unfulfilled * order.price,
+    );
+    console.log(
+      `balance adjusted ${order.id}, user: ${user!.address}, balance ${order.side === "sell" ? unfulfilled * order.price : unfulfilled} ${order.side === "sell" ? quoteCurrency : baseCurrency}`,
+    );
   }
 
   getOrderbook(pair: string) {
@@ -218,8 +222,11 @@ class OrderService {
       console.log("------------------------------------------------------");
     });
 
-    if (newOrder.active) {
-      //close unfulfilled market order and create limit order for unfulfilled part
+    if (
+      (newOrder.type === "market" && newOrder.active) ||
+      (newOrder.type === "limit" && newOrder.active && newOrder.filled)
+    ) {
+      //close unfulfilled order and create limit order for unfulfilled part
       newOrder.active = false;
       newOrder.updatedAt = new Date().toJSON();
       newOrder.status = newOrder.filled ? "partiallyFilled" : "canceled";
