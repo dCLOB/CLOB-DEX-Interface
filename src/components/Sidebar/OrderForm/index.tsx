@@ -52,9 +52,8 @@ export const OrderForm = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit =
-    (checkFee?: boolean) =>
+    (side: OrderSide, checkFee?: boolean) =>
     async ({ type, price, amount }: { type?: string; price?: string; amount?: string }) => {
-      //
       // additional validation before submit
       const balance = balanceData?.data.balance[side === "sell" ? baseCurrency : quoteCurrency] ?? 0;
       if (side === "sell" && Number(amount) > balance) {
@@ -95,15 +94,15 @@ export const OrderForm = () => {
   const [networkFeeDialogOpen, setNetworkFeeDialogOpen] = useState(false);
 
   const handleCreateOrder = (side: OrderSide) => {
-    setSide(side);
-    handleSubmit(onSubmit(!hasOrders))();
+    setSide(side); // will be used later in modal if needed
+    handleSubmit(onSubmit(side, !hasOrders))();
   };
 
   const { mutateAsync: payFee, isPending: isPayFeePending } = useWithdraw();
 
   const handlePayFee = async () => {
     await payFee({ token: "XLM", amount: 1 });
-    handleSubmit(onSubmit())();
+    handleSubmit(onSubmit(side))();
   };
 
   return (
