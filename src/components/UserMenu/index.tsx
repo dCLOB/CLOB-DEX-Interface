@@ -14,7 +14,7 @@ import {
   Typography,
   Avatar,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFreighterContext } from "@/providers/FreighterProvider";
 import { useBalance } from "@/hooks/useBalance";
 import { formatDecimal } from "@/utils/formatters/number";
@@ -39,6 +39,12 @@ export const UserMenu = () => {
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isConnected && Boolean(anchorEl)) {
+      handleClose();
+    }
+  }, [isConnected]);
 
   if (!isConnected) return null;
 
