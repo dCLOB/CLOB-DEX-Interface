@@ -27,7 +27,7 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
     mode: "onChange",
     reValidateMode: "onChange",
     defaultValues: {
-      amount: "0.00",
+      amount: "",
     },
     resolver: yupResolver(schema),
     context: { balance },
