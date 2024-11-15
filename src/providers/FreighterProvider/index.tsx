@@ -3,7 +3,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
 import { IFreighterContext } from "./types";
 import freighterApi from "@stellar/freighter-api";
-import { Horizon } from "@stellar/stellar-sdk";
 import { API } from "@/api/api";
 
 const FreighterContext = createContext<IFreighterContext | undefined>(undefined);
@@ -12,8 +11,6 @@ const useFreighter = (): IFreighterContext => {
   const [status, setStatus] = useState<IFreighterContext["status"]>("connecting"); //TODO
   const [network, setNetwork] = useState<IFreighterContext["network"]>();
   const [address, setAddress] = useState<IFreighterContext["address"]>();
-
-  const [client, setClient] = useState<IFreighterContext["client"]>();
 
   const connect = async () => {
     try {
@@ -48,18 +45,6 @@ const useFreighter = (): IFreighterContext => {
     return () => watcher.stop();
   }, []);
 
-  // create client
-  useEffect(() => {
-    freighterApi
-      .getNetworkDetails()
-      .then((result) => {
-        if (result.error) throw result.error;
-        const client = new Horizon.Server(result.networkUrl);
-        setClient(client);
-      })
-      .catch((e) => console.error(e));
-  }, [network?.network]);
-
   return {
     status,
     isConnecting: status === "connecting",
@@ -67,7 +52,6 @@ const useFreighter = (): IFreighterContext => {
     isFailed: status === "failed",
     address,
     network,
-    client,
     connect,
   };
 };

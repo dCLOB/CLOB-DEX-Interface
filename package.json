@@ -11,6 +11,8 @@
     "start:local": "npm ci && next build && next start"
   },
   "dependencies": {
+    "@contracts/dex": "file:contracts/dex",
+    "@contracts/token": "file:contracts/token",
     "@emotion/cache": "^11.13.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",

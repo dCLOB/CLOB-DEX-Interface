@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useFreighterContext } from "@/providers/FreighterProvider";
-import { useBalance } from "@/hooks/useBalance";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { formatDecimal } from "@/utils/formatters/number";
 import { Deposit } from "@/components/Deposit";
 import { Withdraw } from "@/components/Withdraw";
@@ -35,7 +35,7 @@ export const UserMenu = () => {
   const open = Boolean(anchorEl);
 
   const { network, address, isConnected } = useFreighterContext();
-  const balance = useBalance();
+  const balance = useWalletBalance();
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);

@@ -2,6 +2,7 @@ import { Box, Card, Divider } from "@mui/material";
 import { useFreighterContext } from "@/providers/FreighterProvider";
 import { Assets } from "@/components/Sidebar/Assets";
 import { OrderForm } from "@/components/Sidebar/OrderForm";
+import { AssetsDEX } from "@/components/Sidebar/AssetsDEX";
 
 export const Sidebar = () => {
   const { address } = useFreighterContext();
@@ -12,6 +13,12 @@ export const Sidebar = () => {
         <OrderForm />
         <Divider />
         {Boolean(address) && <Assets />}
+        {Boolean(address) && (
+          <>
+            <Divider />
+            <AssetsDEX />
+          </>
+        )}
       </Box>
     </Card>
   );

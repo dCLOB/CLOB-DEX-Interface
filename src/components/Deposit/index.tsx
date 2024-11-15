@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { TokenSelect } from "@/components/TokenSelect";
 import { TextField } from "@/components/TextField";
 import { TOKENS } from "@/constants";
-import { useBalance } from "@/hooks/useBalance";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { schema } from "./validationSchema";
@@ -12,15 +12,21 @@ import { LoadingButton } from "@mui/lab";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { CurrencyRow } from "@/components/CurrencyRow";
+import { useFreighterContext } from "@/providers/FreighterProvider";
+import { useDexContract } from "@/hooks/useDexContract";
+import { useTokenContract } from "@/hooks/useTokenContract";
+import { getTokenContractId, parseUnits } from "@/utils";
 
 interface DepositProps {
   onClose: () => void;
 }
 
 export const Deposit = ({ onClose }: DepositProps) => {
+  const [loading, setLoading] = useState(false);
+
   const [token, setToken] = useState(TOKENS[0]);
 
-  const balance = useBalance(token);
+  const balance = useWalletBalance(token);
 
   const { control, handleSubmit, trigger, formState, getFieldState } = useForm({
     mode: "onChange",
@@ -36,17 +42,47 @@ export const Deposit = ({ onClose }: DepositProps) => {
     if (getFieldState("amount").isTouched) trigger("amount");
   }, [balance]);
 
-  const { mutateAsync: deposit, isPending } = useDeposit();
+  const { address } = useFreighterContext();
+
+  const dexContract = useDexContract();
+  const tokenContract = useTokenContract(token);
+
+  const { mutateAsync: deposit } = useDeposit();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit = async ({ amount }: { amount: string }) => {
-    await deposit({ token, amount: parseFloat(amount) });
-    await queryClient.refetchQueries({ queryKey: ["balance"] });
-    enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
-      variant: "success",
-    });
-    onClose();
+    try {
+      setLoading(true);
+      // TODO
+      const { result: decimals } = await tokenContract.decimals();
+
+      const tx = await dexContract.deposit({
+        user: address!,
+        token: getTokenContractId(token),
+        amount: parseUnits(amount, decimals),
+      });
+      const res = await tx.signAndSend();
+      console.log("deposit call result: ", res);
+      // TODO
+      await deposit({ token, amount: parseFloat(amount) });
+
+      await queryClient.refetchQueries({ queryKey: ["wallet-balance"] });
+      await queryClient.refetchQueries({ queryKey: ["dex-balance"] });
+      await queryClient.refetchQueries({ queryKey: ["balance"] });
+
+      enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
+        variant: "success",
+      });
+      onClose();
+    } catch (e) {
+      console.error(e);
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,7 +113,7 @@ export const Deposit = ({ onClose }: DepositProps) => {
           <Button color="error" onClick={onClose}>
             Cancel
           </Button>
-          <LoadingButton color="success" type="submit" loading={isPending} disabled={!formState.isValid}>
+          <LoadingButton color="success" type="submit" loading={loading} disabled={!formState.isValid}>
             Deposit
           </LoadingButton>
         </DialogActions>

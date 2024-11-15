@@ -1,3 +1,5 @@
+import { OrderBookId } from "@contracts/dex";
+
 export type OrderSide = "sell" | "buy";
 export type OrderType = "limit" | "market";
 export type OrderStatus = "open" | "partiallyFilled" | "filled" | "canceled";
@@ -16,6 +18,7 @@ export interface Order {
   updatedAt: string;
   active: boolean; // active
   averagePrice: number; // for filled order, 0 - for unfilled
+  orderBookId?: OrderBookId;
 }
 
-export type OrderCreateData = Pick<Order, "pair" | "side" | "price" | "amount" | "type">;
+export type OrderCreateData = Pick<Order, "pair" | "side" | "price" | "amount" | "type" | "orderBookId">;
