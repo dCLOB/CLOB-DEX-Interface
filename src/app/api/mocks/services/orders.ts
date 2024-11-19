@@ -218,52 +218,50 @@ class OrderService {
       console.log(
         `balance adjusted ${matchedOrder.id}, user: ${matchedOrderUser.address}, balance ${matchedOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount} ${matchedOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
       );
-
+      this.closeOrderIfNeeded(matchedOrder, matchedOrderUser);
       console.log("------------------------------------------------------");
     });
 
-    if (
-      (newOrder.type === "market" && newOrder.active) ||
-      (newOrder.type === "limit" && newOrder.active && newOrder.filled)
-    ) {
+    //////!!!!!!
+    this.closeOrderIfNeeded(newOrder, newOrderUser);
+    console.log("======================================================");
+  }
+
+  closeOrderIfNeeded(order: Order, user: UserData) {
+    if ((order.type === "market" && order.active) || (order.type === "limit" && order.active && order.filled)) {
       //close unfulfilled order and create limit order for unfulfilled part
-      newOrder.active = false;
-      newOrder.updatedAt = new Date().toJSON();
-      newOrder.status = newOrder.filled ? "partiallyFilled" : "canceled";
-      console.log(`order ${newOrder.id} closed. filled: ${newOrder.filled}/${newOrder.amount}`);
-      const unfulfilledAmount = newOrder.amount - newOrder.filled;
+      order.active = false;
+      order.updatedAt = new Date().toJSON();
+      order.status = order.filled ? "partiallyFilled" : "canceled";
+      console.log(`order ${order.id} closed. filled: ${order.filled}/${order.amount}`);
+      const unfulfilledAmount = order.amount - order.filled;
       // return unfulfilled part to market order user
-      if (newOrder.side === "sell") {
-        userService.addBalance(newOrderUser.address, baseCurrency, unfulfilledAmount);
+      const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
+
+      if (order.side === "sell") {
+        userService.addBalance(user.address, baseCurrency, unfulfilledAmount);
         console.log(
-          `balance adjusted ${newOrderUser.id}, user: ${newOrderUser.address}, balance ${unfulfilledAmount} ${baseCurrency}`,
+          `balance adjusted ${order.id}, user: ${user.address}, balance ${unfulfilledAmount} ${baseCurrency}`,
         );
       } else {
-        const orderTrades = tradeService.getOrderTrades(newOrder.id);
+        const orderTrades = tradeService.getOrderTrades(order.id);
         const diff =
-          newOrder.amount * newOrder.price -
-          orderTrades.reduce((total, trade) => total + trade.price * trade.amount, 0);
-        userService.addBalance(newOrderUser.address, quoteCurrency, diff);
-        console.log(
-          `balance adjusted ${newOrderUser.id}, user: ${newOrderUser.address}, balance ${diff} ${quoteCurrency}`,
-        );
+          order.amount * order.price - orderTrades.reduce((total, trade) => total + trade.price * trade.amount, 0);
+        userService.addBalance(user.address, quoteCurrency, diff);
+        console.log(`balance adjusted ${order.id}, user: ${user.address}, balance ${diff} ${quoteCurrency}`);
       }
 
-      const newLimitOrder = this.createOrder(
+      this.createOrder(
         {
-          pair: newOrder.pair,
-          side: newOrder.side,
-          price: tradeService.getLatestPrice(newOrder.pair),
+          pair: order.pair,
+          side: order.side,
+          price: tradeService.getLatestPrice(order.pair),
           amount: unfulfilledAmount,
           type: "limit",
         },
-        newOrderUser,
+        user,
       );
-      console.log(`new limit order ${newLimitOrder.id} opened. amount: ${newOrder.amount}`);
-      this.matchOrders(newLimitOrder);
     }
-
-    console.log("======================================================");
   }
 }
 
