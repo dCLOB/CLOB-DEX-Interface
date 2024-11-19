@@ -7,7 +7,7 @@ import { Client as DexContractClient } from "@contracts/dex";
 import { SOROBAN_URL, TOKENS } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 
-const getTokenBalance = async (dexContract: DexContractClient, user: string, token: string) => {
+export const getTokenBalance = async (dexContract: DexContractClient, user: string, token: string) => {
   try {
     const contract = new Client({
       ...networks.testnet,
