@@ -1,5 +1,3 @@
-import { Horizon } from "@stellar/stellar-sdk";
-
 export type WalletConnectStatus = "connecting" | "connected" | "disconnected" | "failed";
 
 interface FreighterNetwork {
@@ -15,8 +13,6 @@ export interface IFreighterContext {
 
   network?: FreighterNetwork;
   address?: string;
-
-  client?: Horizon.Server;
 
   connect: () => Promise<void>;
 }

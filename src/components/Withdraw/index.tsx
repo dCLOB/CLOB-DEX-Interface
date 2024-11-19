@@ -11,12 +11,18 @@ import { LoadingButton } from "@mui/lab";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { CurrencyRow } from "@/components/CurrencyRow";
+import { useFreighterContext } from "@/providers/FreighterProvider";
+import { useDexContract } from "@/hooks/useDexContract";
+import { useTokenContract } from "@/hooks/useTokenContract";
+import { getTokenContractId, parseUnits } from "@/utils";
 
 interface WithdrawProps {
   onClose: () => void;
 }
 
 export const Withdraw = ({ onClose }: WithdrawProps) => {
+  const [loading, setLoading] = useState(false);
+
   const [token, setToken] = useState(TOKENS[0]);
 
   const { data } = useGetBalance();
@@ -37,17 +43,47 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
     trigger("amount");
   }, [balance]);
 
-  const { mutateAsync: withdraw, isPending } = useWithdraw();
+  const { address } = useFreighterContext();
+
+  const dexContract = useDexContract();
+  const tokenContract = useTokenContract(token);
+
+  const { mutateAsync: withdraw } = useWithdraw();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit = async ({ amount }: { amount: string }) => {
-    await withdraw({ token, amount: parseFloat(amount) });
-    await queryClient.refetchQueries({ queryKey: ["balance"] });
-    enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
-      variant: "success",
-    });
-    onClose();
+    try {
+      setLoading(true);
+      // TODO
+      const { result: decimals } = await tokenContract.decimals();
+
+      const tx = await dexContract.withdraw({
+        user: address!,
+        token: getTokenContractId(token),
+        amount: parseUnits(amount, decimals),
+      });
+      const res = await tx.signAndSend();
+      console.log("withdraw call result: ", res);
+      // TODO
+      await withdraw({ token, amount: parseFloat(amount) });
+
+      await queryClient.refetchQueries({ queryKey: ["wallet-balance"] });
+      await queryClient.refetchQueries({ queryKey: ["dex-balance"] });
+      await queryClient.refetchQueries({ queryKey: ["balance"] });
+
+      enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
+        variant: "success",
+      });
+      onClose();
+    } catch (e) {
+      console.error(e);
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,7 +114,7 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
           <Button color="error" onClick={onClose}>
             Cancel
           </Button>
-          <LoadingButton color="success" type="submit" loading={isPending} disabled={!formState.isValid}>
+          <LoadingButton color="success" type="submit" loading={loading} disabled={!formState.isValid}>
             Withdraw
           </LoadingButton>
         </DialogActions>
