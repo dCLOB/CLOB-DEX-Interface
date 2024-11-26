@@ -1,4 +1,4 @@
-import { Client, networks } from "@contracts/token"; // TODO use proper package
+import { Client, networks } from "@contracts/token";
 import { useFreighterContext } from "@/providers/FreighterProvider";
 import { useMemo } from "react";
 import freighterApi from "@stellar/freighter-api";
