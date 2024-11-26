@@ -98,7 +98,7 @@ export const OrderForm = () => {
           baseTokenContract.decimals().then((res) => res.result),
           quoteTokenContract.decimals().then((res) => res.result),
         ]);
-        console.log(createOrderContractData(orderData, address as string, baseTokenDecimals, quoteTokenDecimals));
+
         const tx = await dexContract.create_order(
           createOrderContractData(orderData, address as string, baseTokenDecimals, quoteTokenDecimals),
         );
@@ -106,10 +106,7 @@ export const OrderForm = () => {
 
         console.log("create order call result: ", result);
         // TODO
-        console.log("t", {
-          ...orderData,
-          orderBookId: getOrderBookId((result.getTransactionResponse as { returnValue: xdr.ScVal }).returnValue),
-        });
+
         await createOrder({
           ...orderData,
           orderBookId: getOrderBookId((result.getTransactionResponse as { returnValue: xdr.ScVal }).returnValue),

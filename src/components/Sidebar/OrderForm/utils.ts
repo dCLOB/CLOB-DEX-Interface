@@ -32,6 +32,7 @@ export const createOrderContractData = (
 
 export const getOrderBookId = (value: xdr.ScVal): Order["orderBookId"] => {
   const [result] = scValToNative(value);
+  console.log("parsed result", result);
   const [tag, { id, price }] = result;
   return { tag, values: [{ id: Number(id), price: Number(price) }] };
 };
