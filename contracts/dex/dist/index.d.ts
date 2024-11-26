@@ -2,6 +2,7 @@ import {
   AssembledTransaction,
   Client as ContractClient,
   ClientOptions as ContractClientOptions,
+  Result,
 } from "@stellar/stellar-sdk/contract";
 import type { u32, u64, u128, i128, Option } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
@@ -10,7 +11,7 @@ export * as rpc from "@stellar/stellar-sdk/rpc";
 export declare const networks: {
   readonly testnet: {
     readonly networkPassphrase: "Test SDF Network ; September 2015";
-    readonly contractId: "CATJXFTKUKOYI7GM7O7FFNTA242GG6GVVV4GCSMH2PMRUKTON6KTKO3R";
+    readonly contractId: "CAQDMBFQPCGRCCGRM43ITEM5SGPLZ2GOVM5FWQSAFML672IW6YYIDUWN";
   };
 };
 export declare const Errors: {
@@ -228,7 +229,7 @@ export interface Client {
        */
       simulate?: boolean;
     },
-  ) => Promise<AssembledTransaction<readonly [Option<OrderBookId>, Array<Order>]>>;
+  ) => Promise<AssembledTransaction<Result<readonly [OrderBookId, Array<Order>]>>>;
   /**
    * Construct and simulate a cancel_order transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
@@ -345,7 +346,11 @@ export declare class Client extends ContractClient {
   constructor(options: ContractClientOptions);
   readonly fromJSON: {
     initialize: (json: string) => AssembledTransaction<null>;
-    create_order: (json: string) => AssembledTransaction<readonly [Option<OrderBookId>, Order[]]>;
+    create_order: (
+      json: string,
+    ) => AssembledTransaction<
+      Result<readonly [OrderBookId, Order[]], import("@stellar/stellar-sdk/contract").ErrorMessage>
+    >;
     cancel_order: (json: string) => AssembledTransaction<Option<Order>>;
     deposit: (json: string) => AssembledTransaction<null>;
     withdraw: (json: string) => AssembledTransaction<null>;

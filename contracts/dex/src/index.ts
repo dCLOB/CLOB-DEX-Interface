@@ -32,7 +32,7 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CATJXFTKUKOYI7GM7O7FFNTA242GG6GVVV4GCSMH2PMRUKTON6KTKO3R",
+    contractId: "CAQDMBFQPCGRCCGRM43ITEM5SGPLZ2GOVM5FWQSAFML672IW6YYIDUWN",
   },
 } as const;
 
@@ -218,7 +218,7 @@ export interface Client {
        */
       simulate?: boolean;
     },
-  ) => Promise<AssembledTransaction<readonly [Option<OrderBookId>, Array<Order>]>>;
+  ) => Promise<AssembledTransaction<Result<readonly [OrderBookId, Array<Order>]>>>;
 
   /**
    * Construct and simulate a cancel_order transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -337,7 +337,7 @@ export class Client extends ContractClient {
         "AAAAAQAAAAAAAAAAAAAAElVzZXJCYWxhbmNlTWFuYWdlcgAAAAAAAgAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAR1c2VyAAAAEw==",
         "AAAAAQAAAAAAAAAAAAAADFVzZXJCYWxhbmNlcwAAAAIAAAAAAAAAB2JhbGFuY2UAAAAACwAAAAAAAAASYmFsYW5jZV9pbl90cmFkaW5nAAAAAAAL",
         "AAAAAAAAAAAAAAAKaW5pdGlhbGl6ZQAAAAAAAQAAAAAAAAALdG9rZW5fcGFpcnMAAAAD6gAAA+0AAAACAAAAEwAAABMAAAAA",
-        "AAAAAAAAAAAAAAAMY3JlYXRlX29yZGVyAAAABQAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAKb3JkZXJfdHlwZQAAAAAH0AAAAAlPcmRlclR5cGUAAAAAAAAAAAAABHNpZGUAAAfQAAAACU9yZGVyU2lkZQAAAAAAAAAAAAAFb3JkZXIAAAAAAAfQAAAACE5ld09yZGVyAAAAAAAAAAR1c2VyAAAAEwAAAAEAAAPtAAAAAgAAA+gAAAfQAAAAC09yZGVyQm9va0lkAAAAA+oAAAfQAAAABU9yZGVyAAAA",
+        "AAAAAAAAAAAAAAAMY3JlYXRlX29yZGVyAAAABQAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAKb3JkZXJfdHlwZQAAAAAH0AAAAAlPcmRlclR5cGUAAAAAAAAAAAAABHNpZGUAAAfQAAAACU9yZGVyU2lkZQAAAAAAAAAAAAAFb3JkZXIAAAAAAAfQAAAACE5ld09yZGVyAAAAAAAAAAR1c2VyAAAAEwAAAAEAAAPpAAAD7QAAAAIAAAfQAAAAC09yZGVyQm9va0lkAAAAA+oAAAfQAAAABU9yZGVyAAAAAAAAAw==",
         "AAAAAAAAAAAAAAAMY2FuY2VsX29yZGVyAAAAAwAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAIb3JkZXJfaWQAAAfQAAAAC09yZGVyQm9va0lkAAAAAAAAAAAEdXNlcgAAABMAAAABAAAD6AAAB9AAAAAFT3JkZXIAAAA=",
         "AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
         "AAAAAAAAAAAAAAAId2l0aGRyYXcAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
@@ -348,7 +348,7 @@ export class Client extends ContractClient {
   }
   public readonly fromJSON = {
     initialize: this.txFromJSON<null>,
-    create_order: this.txFromJSON<readonly [Option<OrderBookId>, Array<Order>]>,
+    create_order: this.txFromJSON<Result<readonly [OrderBookId, Array<Order>]>>,
     cancel_order: this.txFromJSON<Option<Order>>,
     deposit: this.txFromJSON<null>,
     withdraw: this.txFromJSON<null>,
