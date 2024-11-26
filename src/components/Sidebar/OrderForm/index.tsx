@@ -17,11 +17,16 @@ import { OrderSide, OrderType } from "@/api/orders/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { ConnectWallet } from "@/components/ConnectWallet";
+import { useTokenContract } from "@/hooks/useTokenContract";
+import { useDexContract } from "@/hooks/useDexContract";
+import { createOrderContractData, getOrderBookId } from "./utils";
+import { xdr } from "@stellar/stellar-sdk";
 
 export const OrderForm = () => {
+  const [loading, setLoading] = useState(false);
   const [side, setSide] = useState<OrderSide>("buy");
 
-  const { isConnected } = useFreighterContext();
+  const { isConnected, address } = useFreighterContext();
 
   const { data: openOrdersData } = useGetOpenOrders();
   const { data: orderHistoryData } = useGetOrderHistory();
@@ -47,9 +52,13 @@ export const OrderForm = () => {
 
   const type = watch("type");
 
-  const { mutateAsync: createOrder, isPending } = useCreateOrder();
+  const { mutateAsync: createOrder } = useCreateOrder();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+
+  const baseTokenContract = useTokenContract(baseCurrency);
+  const quoteTokenContract = useTokenContract(quoteCurrency);
+  const dexContract = useDexContract();
 
   const onSubmit =
     (side: OrderSide, checkFee?: boolean) =>
@@ -74,21 +83,51 @@ export const OrderForm = () => {
       }
       setNetworkFeeDialogOpen(false);
 
-      await createOrder({
-        side,
-        type: type as OrderType,
-        price: type === "market" ? (lastPrice ?? 1) : parseFloat(price!),
-        amount: parseFloat(amount!),
-        pair,
-      });
-      enqueueSnackbar("You have created an order", { variant: "success" });
+      setLoading(true);
 
-      resetField("price");
-      resetField("amount");
-      clearErrors();
+      try {
+        const orderData = {
+          side,
+          type: type as OrderType,
+          price: type === "market" ? (lastPrice ?? 1) : parseFloat(price!),
+          amount: parseFloat(amount!),
+          pair,
+        };
+        // TODO
+        const [baseTokenDecimals, quoteTokenDecimals] = await Promise.all([
+          baseTokenContract.decimals().then((res) => res.result),
+          quoteTokenContract.decimals().then((res) => res.result),
+        ]);
+        console.log(createOrderContractData(orderData, address as string, baseTokenDecimals, quoteTokenDecimals));
+        const tx = await dexContract.create_order(
+          createOrderContractData(orderData, address as string, baseTokenDecimals, quoteTokenDecimals),
+        );
+        const result = await tx.signAndSend();
 
-      queryClient.refetchQueries({ queryKey: ["orders"] });
-      queryClient.refetchQueries({ queryKey: ["balance"] });
+        console.log("create order call result: ", result);
+        // TODO
+        console.log("t", {
+          ...orderData,
+          orderBookId: getOrderBookId((result.getTransactionResponse as { returnValue: xdr.ScVal }).returnValue),
+        });
+        await createOrder({
+          ...orderData,
+          orderBookId: getOrderBookId((result.getTransactionResponse as { returnValue: xdr.ScVal }).returnValue),
+        });
+        enqueueSnackbar("You have created an order", { variant: "success" });
+
+        resetField("price");
+        resetField("amount");
+        clearErrors();
+
+        await queryClient.refetchQueries({ queryKey: ["orders"] });
+        await queryClient.refetchQueries({ queryKey: ["balance"] });
+      } catch (e) {
+        console.error(e);
+        enqueueSnackbar("Something went wrong", { variant: "error" });
+      } finally {
+        setLoading(false);
+      }
     };
 
   const [networkFeeDialogOpen, setNetworkFeeDialogOpen] = useState(false);
@@ -166,9 +205,9 @@ export const OrderForm = () => {
               color="success"
               fullWidth
               size="small"
-              disabled={!formState.isValid || isPending}
+              disabled={!formState.isValid || loading}
               onClick={() => handleCreateOrder("buy")}
-              loading={isPending && side === "buy"}
+              loading={loading && side === "buy"}
             >
               Buy/Long
             </LoadingButton>
@@ -177,9 +216,9 @@ export const OrderForm = () => {
               color="error"
               fullWidth
               size="small"
-              disabled={!formState.isValid || isPending}
+              disabled={!formState.isValid || loading}
               onClick={() => handleCreateOrder("sell")}
-              loading={isPending && side === "sell"}
+              loading={loading && side === "sell"}
             >
               Sell/Short
             </LoadingButton>

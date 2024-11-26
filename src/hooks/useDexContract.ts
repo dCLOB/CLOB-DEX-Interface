@@ -13,19 +13,19 @@ export const useDexContract = () => {
         ...networks.testnet,
         rpcUrl: SOROBAN_URL,
         signTransaction: async (x) => {
-          const { signedTxXdr, error } = await freighterApi.signTransaction(x, {
+          const { signedTxXdr, signerAddress, error } = await freighterApi.signTransaction(x, {
             networkPassphrase: networks.testnet.networkPassphrase,
           });
           if (error) throw error;
-          return signedTxXdr;
+          return { signedTxXdr, signerAddress };
         },
         signAuthEntry: async (base64Xdr) => {
-          const { signedAuthEntry, error } = await freighterApi.signAuthEntry(base64Xdr, {
+          const { signedAuthEntry, signerAddress, error } = await freighterApi.signAuthEntry(base64Xdr, {
             networkPassphrase: networks.testnet.networkPassphrase,
             address,
           });
           if (error) throw error;
-          return signedAuthEntry!.toString("base64");
+          return { signedAuthEntry: signedAuthEntry!.toString("base64"), signerAddress };
         },
         publicKey: address,
       }),
