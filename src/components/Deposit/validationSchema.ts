@@ -5,10 +5,9 @@ export const schema = yup
     amount: yup
       .string()
       .test("is-positive-amount", "Please, set amount to deposit", (value = "") => parseFloat(value) > 0)
-      // .test("is-valid-amount", "Insufficient funds", (value = "", ctx) => {
-      //   return parseFloat(ctx.options.context?.balance) >= parseFloat(value);
-      // })
-      // TODO disable validation for mock
+      .test("is-valid-amount", "Insufficient funds", (value = "", ctx) => {
+        return parseFloat(ctx.options.context?.balance) >= parseFloat(value);
+      })
       .test("is-valid-amount", "Insufficient funds", () => {
         return true;
       })
