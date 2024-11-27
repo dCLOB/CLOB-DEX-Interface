@@ -22,6 +22,8 @@ import { useDexContract } from "@/hooks/useDexContract";
 import { createOrderContractData, getOrderBookId } from "./utils";
 import { xdr } from "@stellar/stellar-sdk";
 
+const FEE = 1;
+
 export const OrderForm = () => {
   const [loading, setLoading] = useState(false);
   const [side, setSide] = useState<OrderSide>("buy");
@@ -61,7 +63,7 @@ export const OrderForm = () => {
   const dexContract = useDexContract();
 
   const onSubmit =
-    (side: OrderSide, checkFee?: boolean) =>
+    (side: OrderSide, checkFee?: boolean, isPayFeeApproved?: boolean) =>
     async ({ type, price, amount }: { type?: string; price?: string; amount?: string }) => {
       // additional validation before submit
       const balance = balanceData?.data.balance[side === "sell" ? baseCurrency : quoteCurrency] ?? 0;
@@ -82,6 +84,14 @@ export const OrderForm = () => {
         return;
       }
       setNetworkFeeDialogOpen(false);
+
+      if (isPayFeeApproved) {
+        const xlmBalance = balanceData?.data.balance["XLM"] ?? 0;
+        if ((side === "sell" && xlmBalance < FEE) || (side === "buy" && Number(amount) + FEE > balance / actualPrice)) {
+          enqueueSnackbar("Not enough funds to cover network fee", { variant: "error" });
+          return;
+        }
+      }
 
       setLoading(true);
 
@@ -111,6 +121,11 @@ export const OrderForm = () => {
           ...orderData,
           orderBookId: getOrderBookId((result.getTransactionResponse as { returnValue: xdr.ScVal }).returnValue),
         });
+
+        if (isPayFeeApproved) {
+          await payFee({ token: "XLM", amount: FEE });
+        }
+
         enqueueSnackbar("You have created an order", { variant: "success" });
 
         resetField("price");
@@ -129,16 +144,15 @@ export const OrderForm = () => {
 
   const [networkFeeDialogOpen, setNetworkFeeDialogOpen] = useState(false);
 
-  const handleCreateOrder = (side: OrderSide) => {
+  const handleCreateOrder = async (side: OrderSide) => {
     setSide(side); // will be used later in modal if needed
-    handleSubmit(onSubmit(side, !hasOrders))();
+    await handleSubmit(onSubmit(side, !hasOrders, false))();
   };
 
   const { mutateAsync: payFee, isPending: isPayFeePending } = useWithdraw();
 
   const handlePayFee = async () => {
-    await payFee({ token: "XLM", amount: 1 });
-    handleSubmit(onSubmit(side))();
+    await handleSubmit(onSubmit(side, false, true))();
   };
 
   return (
@@ -258,7 +272,7 @@ export const OrderForm = () => {
         <Dialog open onClose={() => setNetworkFeeDialogOpen(false)}>
           <DialogTitle>Network fee</DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Typography variant="body2">You must pay the network fee 1 XLM one time</Typography>
+            <Typography variant="body2">You must pay the network fee {FEE} XLM one time</Typography>
           </DialogContent>
           <DialogActions>
             <Button color="error" onClick={() => setNetworkFeeDialogOpen(false)}>

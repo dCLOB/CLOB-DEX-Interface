@@ -72,7 +72,7 @@ export const Withdraw = ({ onClose }: WithdrawProps) => {
       await queryClient.refetchQueries({ queryKey: ["dex-balance"] });
       await queryClient.refetchQueries({ queryKey: ["balance"] });
 
-      enqueueSnackbar("The network might take a while. Your assets will appear on your balance soon", {
+      enqueueSnackbar("Your assets will appear on your balance soon", {
         variant: "success",
       });
       onClose();

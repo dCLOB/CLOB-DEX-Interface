@@ -22,7 +22,7 @@ But you don't need to publish this library to NPM to use it. You can add it to y
 
 ```json
 "dependencies": {
-  "26-11": "./path/to/this/folder"
+  "dex": "./path/to/this/folder"
 }
 ```
 
