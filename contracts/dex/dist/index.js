@@ -10,7 +10,7 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CBE2QUQM4G4HKN3HOR2UF4M6MGGKJ472DZBBRFWD6QBIF7J325DIVX4E",
+    contractId: "CB7EXSILILBBZJXGMFZZ24CCUZ5ILLDMXM6SOUW3RMLXGPEAP22XMUDQ",
   },
 };
 export const Errors = {
@@ -54,6 +54,7 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
         "AAAAAAAAAAAAAAAId2l0aGRyYXcAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
         "AAAAAAAAAAAAAAAIYmFsYW5jZXMAAAACAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAB9AAAAAMVXNlckJhbGFuY2Vz",
+        "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAA",
       ]),
       options,
     );
@@ -66,5 +67,6 @@ export class Client extends ContractClient {
     deposit: this.txFromJSON,
     withdraw: this.txFromJSON,
     balances: this.txFromJSON,
+    upgrade: this.txFromJSON,
   };
 }
