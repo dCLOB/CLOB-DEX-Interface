@@ -78,11 +78,11 @@ export const OrderForm = () => {
       }
       //
 
-      if (checkFee) {
-        setNetworkFeeDialogOpen(true);
-        return;
-      }
-      setNetworkFeeDialogOpen(false);
+      // if (checkFee) {
+      //   setNetworkFeeDialogOpen(true);
+      //   return;
+      // }
+      // setNetworkFeeDialogOpen(false);
 
       if (isPayFeeApproved) {
         const xlmBalance = balanceData?.data.balance["XLM"] ?? 0;
