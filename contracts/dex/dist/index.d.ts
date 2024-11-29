@@ -11,7 +11,7 @@ export * as rpc from "@stellar/stellar-sdk/rpc";
 export declare const networks: {
   readonly testnet: {
     readonly networkPassphrase: "Test SDF Network ; September 2015";
-    readonly contractId: "CAQDMBFQPCGRCCGRM43ITEM5SGPLZ2GOVM5FWQSAFML672IW6YYIDUWN";
+    readonly contractId: "CBE2QUQM4G4HKN3HOR2UF4M6MGGKJ472DZBBRFWD6QBIF7J325DIVX4E";
   };
 };
 export declare const Errors: {
@@ -49,9 +49,6 @@ export declare const Errors: {
     message: string;
   };
   12: {
-    message: string;
-  };
-  13: {
     message: string;
   };
 };
@@ -111,14 +108,6 @@ export interface OrderBook {
   buy_orders: PriceLevelStore;
   sell_orders: PriceLevelStore;
 }
-export interface PairManager {
-  symbol: string;
-}
-export interface PairStorageInfo {
-  status: ListingStatus;
-  token1: string;
-  token2: string;
-}
 export interface PriceLevelStore {
   levels: Array<Option<PriceStore>>;
   levels_price: Array<Option<u128>>;
@@ -129,18 +118,6 @@ export interface PriceStore {
   orders_id_counter: u64;
   price: u128;
 }
-export interface TokenManager {
-  token: string;
-}
-export type ListingStatus =
-  | {
-      tag: "Listed";
-      values: void;
-    }
-  | {
-      tag: "Delisted";
-      values: void;
-    };
 export type FillStatus =
   | {
       tag: "Complete";
@@ -257,7 +234,7 @@ export interface Client {
        */
       simulate?: boolean;
     },
-  ) => Promise<AssembledTransaction<Option<Order>>>;
+  ) => Promise<AssembledTransaction<Result<Order>>>;
   /**
    * Construct and simulate a deposit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
@@ -351,7 +328,9 @@ export declare class Client extends ContractClient {
     ) => AssembledTransaction<
       Result<readonly [OrderBookId, Order[]], import("@stellar/stellar-sdk/contract").ErrorMessage>
     >;
-    cancel_order: (json: string) => AssembledTransaction<Option<Order>>;
+    cancel_order: (
+      json: string,
+    ) => AssembledTransaction<Result<Order, import("@stellar/stellar-sdk/contract").ErrorMessage>>;
     deposit: (json: string) => AssembledTransaction<null>;
     withdraw: (json: string) => AssembledTransaction<null>;
     balances: (json: string) => AssembledTransaction<UserBalances>;

@@ -1,7 +1,6 @@
-import { NewOrder, OrderSide, OrderType } from "@contracts/dex";
+import { NewOrder, OrderBookId, OrderSide, OrderType } from "@contracts/dex";
 import { Order, OrderCreateData } from "@/api/orders/types";
 import { getCurrenciesFromPair, getTokenContractId, parseUnits } from "@/utils";
-import { scValToNative, xdr } from "@stellar/stellar-sdk";
 
 export const createOrderContractData = (
   order: OrderCreateData,
@@ -16,6 +15,7 @@ export const createOrderContractData = (
   user: string;
 } => {
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
+
   return {
     trading_pair: [getTokenContractId(baseCurrency), getTokenContractId(quoteCurrency)],
     order_type: { tag: order.type === "limit" ? "Limit" : "Market", values: undefined },
@@ -30,9 +30,14 @@ export const createOrderContractData = (
   };
 };
 
-export const getOrderBookId = (value: xdr.ScVal): Order["orderBookId"] => {
-  const [result] = scValToNative(value);
-  console.log("parsed result", result);
-  const [tag, { id, price }] = result;
-  return { tag, values: [{ id: Number(id), price: Number(price) }] };
+// export const getOrderBookId = (value: xdr.ScVal): Order["orderBookId"] => {
+//   const [result] = scValToNative(value);
+//   const [tag, { id, price }] = result;
+//
+//   return { tag, values: [{ id: Number(id), price: Number(price) }] };
+// };
+
+export const getOrderBookId = (value: OrderBookId): Order["orderBookId"] => {
+  const { id, price } = value.values[0];
+  return { tag: value.tag, values: [{ id: Number(id), price: Number(price) }] };
 };

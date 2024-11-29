@@ -16,7 +16,8 @@ export const getTokenBalance = async (dexContract: DexContractClient, user: stri
     });
     const { result: decimals } = await contract.decimals();
     const tx = await dexContract.balances({ user, token: getTokenContractId(token) });
-    return formatUnits(tx.result.balance - tx.result.balance_in_trading, decimals);
+
+    return formatUnits(tx.result.balance, decimals);
   } catch (e) {
     console.error(e);
     return "0";
@@ -39,6 +40,7 @@ export const useDexBalances = () => {
     queryKey: ["dex-balance", address],
     queryFn: getBalance,
     enabled: isConnected,
+    refetchInterval: 2000,
   });
 
   return (data ?? initialData) as Record<string, `${number}`>;

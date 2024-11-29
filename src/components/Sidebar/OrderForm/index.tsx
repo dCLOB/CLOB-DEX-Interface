@@ -20,7 +20,6 @@ import { ConnectWallet } from "@/components/ConnectWallet";
 import { useTokenContract } from "@/hooks/useTokenContract";
 import { useDexContract } from "@/hooks/useDexContract";
 import { createOrderContractData, getOrderBookId } from "./utils";
-import { xdr } from "@stellar/stellar-sdk";
 
 const FEE = 1;
 
@@ -119,7 +118,7 @@ export const OrderForm = () => {
 
         await createOrder({
           ...orderData,
-          orderBookId: getOrderBookId((result.getTransactionResponse as { returnValue: xdr.ScVal }).returnValue),
+          orderBookId: getOrderBookId(result.result.unwrap()[0]),
         });
 
         if (isPayFeeApproved) {
