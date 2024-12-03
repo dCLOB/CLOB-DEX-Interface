@@ -2,4 +2,5 @@ export const formatDecimal = (value: number | bigint | `${number}`, minDigits = 
   Intl.NumberFormat("en-US", {
     minimumFractionDigits: minDigits,
     maximumFractionDigits: maxDigits,
+    roundingMode: "floor",
   }).format(value);
