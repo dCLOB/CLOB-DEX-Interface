@@ -1,6 +1,7 @@
 import { MarketResponse } from "@/api/markets/types";
 import { BASE_CURRENCY_RATIOS, TRADING_PAIRS } from "@/constants";
 import { tradeService } from "@/app/api/mocks/services/trades";
+import BigNumber from "bignumber.js";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,10 @@ export async function GET() {
       lowestPrice: trades.length ? Math.min(...prices) : basePrice,
       highestPrice: trades.length ? Math.max(...prices) : basePrice,
       priceChange: (lastPrice - basePrice) / basePrice,
-      baseVolume: trades.reduce((volume, trade) => volume + trade.amount, 0),
-      quoteVolume: trades.reduce((volume, trade) => volume + trade.amount * trade.price, 0),
+      baseVolume: trades.reduce((volume, trade) => volume.plus(trade.amount), BigNumber(0)).toString() as `${number}`,
+      quoteVolume: trades
+        .reduce((volume, trade) => volume.plus(BigNumber(trade.amount).multipliedBy(trade.price)), BigNumber(0))
+        .toString() as `${number}`,
     };
   });
 

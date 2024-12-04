@@ -1,5 +1,6 @@
 import { BASE_CURRENCY_RATIOS } from "@/constants";
 import { nanoid } from "nanoid";
+import BigNumber from "bignumber.js";
 
 export interface Trade {
   id: string;
@@ -30,11 +31,10 @@ class TradeService {
 
   calculateAveragePrice(orderId: string) {
     const orderTrades = this.getOrderTrades(orderId);
-    const averagePrice =
-      orderTrades.reduce((total, trade) => total + trade.amount * trade.price, 0) /
-      orderTrades.reduce((total, trade) => total + trade.amount, 0);
-
-    return averagePrice;
+    const averagePrice = orderTrades
+      .reduce((total, trade) => total.plus(BigNumber(trade.amount).multipliedBy(trade.price)), BigNumber(0))
+      .dividedBy(orderTrades.reduce((total, trade) => total.plus(trade.amount), BigNumber(0)));
+    return averagePrice.toNumber();
   }
 
   getPairTrades(pair: string) {

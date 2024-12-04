@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import { SOROBAN_URL, TOKENS } from "@/constants";
 import { getTokenBalance } from "@/hooks/useDexBalance";
 import { Client, networks } from "@contracts/dex";
+import BigNumber from "bignumber.js";
 
 export interface UserData {
   id: string;
@@ -39,7 +40,7 @@ class UserService {
     const user = this.userData.find((user) => user.address === address);
     if (!user) throw Error("user not found");
     const currentBalance = user.balance[token];
-    user.balance[token] = currentBalance + amount;
+    user.balance[token] = BigNumber(currentBalance).plus(amount).toNumber();
   }
 
   getUserById(id: string) {

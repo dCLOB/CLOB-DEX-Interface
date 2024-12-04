@@ -3,6 +3,7 @@ import { Order, OrderCreateData } from "@/api/orders/types";
 import { userService } from "@/app/api/mocks/services/users";
 import { getCurrenciesFromPair } from "@/utils";
 import { tradeService } from "@/app/api/mocks/services/trades";
+import BigNumber from "bignumber.js";
 
 export interface UserData {
   id: string;
@@ -13,8 +14,8 @@ export interface UserData {
 }
 
 interface Orderbook {
-  sell: Record<number, number>;
-  buy: Record<number, number>;
+  sell: Record<number, BigNumber>;
+  buy: Record<number, BigNumber>;
 }
 
 const matchTypes = (a: Order, b: Order) => {
@@ -23,10 +24,10 @@ const matchTypes = (a: Order, b: Order) => {
   return 1;
 };
 
-const getOrderbookValues = (values: Record<number, number>) =>
+const getOrderbookValues = (values: Record<number, BigNumber>) =>
   Object.entries(values)
     .sort((a, b) => Number(b[0]) - Number(a[0]))
-    .map(([price, amount]) => ({ price: Number(price), amount, total: Number(price) * amount }));
+    .map(([price, amount]) => ({ price: Number(price), amount, total: amount.multipliedBy(price).toNumber() }));
 
 class OrderService {
   orders: Order[];
@@ -114,10 +115,10 @@ class OrderService {
 
     const orderbook = pairOpenOrders.reduce(
       (orderbook, order) => {
-        const unfilledAmount = order.amount - order.filled;
-        const orderBookAmount = orderbook[order.side][order.price];
+        const unfilledAmount = BigNumber(order.amount).minus(order.filled);
+        const orderBookAmount = BigNumber(orderbook[order.side][order.price]);
         if (orderbook[order.side][order.price] !== undefined) {
-          orderbook[order.side][order.price] = orderBookAmount + unfilledAmount;
+          orderbook[order.side][order.price] = orderBookAmount.plus(unfilledAmount);
         } else {
           orderbook[order.side][order.price] = unfilledAmount;
         }
@@ -169,16 +170,19 @@ class OrderService {
       console.log(
         `fount matched order ${matchedOrder.id}, amount: ${matchedOrder.amount}, price: ${matchedOrder.price}`,
       );
-      const fillableAmount = Math.min(newOrder.amount - newOrder.filled, matchedOrder.amount - matchedOrder.filled);
+      const fillableAmount = BigNumber.min(
+        BigNumber(newOrder.amount).minus(newOrder.filled),
+        BigNumber(matchedOrder.amount).minus(matchedOrder.filled),
+      );
       console.log(`fillable amount: ${fillableAmount}`);
-      newOrder.filled = newOrder.filled + fillableAmount;
+      newOrder.filled = fillableAmount.plus(newOrder.filled).toNumber();
       const isNewOrderFilled = newOrder.filled === newOrder.amount;
       newOrder.status = isNewOrderFilled ? "filled" : "partiallyFilled";
       if (isNewOrderFilled) newOrder.active = false;
 
       console.log(`new order is filled: ${newOrder.filled}, status: ${newOrder.status}, active: ${newOrder.active}`);
 
-      matchedOrder.filled = matchedOrder.filled + fillableAmount;
+      matchedOrder.filled = fillableAmount.plus(matchedOrder.filled).toNumber();
       const isMatchedOrderFilled = matchedOrder.filled === matchedOrder.amount;
       matchedOrder.status = isMatchedOrderFilled ? "filled" : "partiallyFilled";
       if (isMatchedOrderFilled) matchedOrder.active = false;
@@ -189,7 +193,7 @@ class OrderService {
       const trade = tradeService.addTrade({
         sellOrderId: newOrder.side === "sell" ? newOrder.id : matchedOrder.id,
         buyOrderId: newOrder.side === "buy" ? newOrder.id : matchedOrder.id,
-        amount: fillableAmount,
+        amount: fillableAmount.toNumber(),
         price: matchedOrder.price,
         pair: matchedOrder.pair,
       });
@@ -203,20 +207,20 @@ class OrderService {
       userService.addBalance(
         newOrderUser.address,
         newOrder.side === "sell" ? quoteCurrency : baseCurrency,
-        newOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount,
+        (newOrder.side === "sell" ? fillableAmount.multipliedBy(matchedOrder.price) : fillableAmount).toNumber(),
       );
       console.log(
-        `balance adjusted ${newOrder.id}, user: ${newOrderUser.address}, balance ${newOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount} ${newOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
+        `balance adjusted ${newOrder.id}, user: ${newOrderUser.address}, balance ${newOrder.side === "sell" ? fillableAmount.multipliedBy(matchedOrder.price) : fillableAmount} ${newOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
       );
 
       const matchedOrderUser = userService.getUserById(matchedOrder.userId) as UserData;
       userService.addBalance(
         matchedOrderUser.address,
         matchedOrder.side === "sell" ? quoteCurrency : baseCurrency,
-        matchedOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount,
+        (matchedOrder.side === "sell" ? fillableAmount.multipliedBy(matchedOrder.price) : fillableAmount).toNumber(),
       );
       console.log(
-        `balance adjusted ${matchedOrder.id}, user: ${matchedOrderUser.address}, balance ${matchedOrder.side === "sell" ? fillableAmount * matchedOrder.price : fillableAmount} ${matchedOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
+        `balance adjusted ${matchedOrder.id}, user: ${matchedOrderUser.address}, balance ${matchedOrder.side === "sell" ? fillableAmount.multipliedBy(matchedOrder.price) : fillableAmount} ${matchedOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
       );
       this.closeOrderIfNeeded(matchedOrder, matchedOrderUser);
       console.log("------------------------------------------------------");
@@ -234,12 +238,12 @@ class OrderService {
       order.updatedAt = new Date().toJSON();
       order.status = order.filled ? "partiallyFilled" : "canceled";
       console.log(`order ${order.id} closed. filled: ${order.filled}/${order.amount}`);
-      const unfulfilledAmount = order.amount - order.filled;
+      const unfulfilledAmount = BigNumber(order.amount).minus(order.filled);
       // return unfulfilled part to market order user
       const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
 
       if (order.side === "sell") {
-        userService.addBalance(user.address, baseCurrency, unfulfilledAmount);
+        userService.addBalance(user.address, baseCurrency, unfulfilledAmount.toNumber());
         console.log(
           `balance adjusted ${order.id}, user: ${user.address}, balance ${unfulfilledAmount} ${baseCurrency}`,
         );
@@ -256,7 +260,7 @@ class OrderService {
           pair: order.pair,
           side: order.side,
           price: tradeService.getLatestPrice(order.pair),
-          amount: unfulfilledAmount,
+          amount: unfulfilledAmount.toNumber(),
           type: "limit",
         },
         user,
