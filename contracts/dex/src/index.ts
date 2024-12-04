@@ -32,7 +32,7 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CB7EXSILILBBZJXGMFZZ24CCUZ5ILLDMXM6SOUW3RMLXGPEAP22XMUDQ",
+    contractId: "CBEY7E25DOI6GDD6LEXPBR4JK5TDX6GB6JTXNGEXBGQ2HOPBCTQ4WD4T",
   },
 } as const;
 
@@ -272,6 +272,75 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
 
   /**
+   * Construct and simulate a get_prices transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_prices: (
+    { trading_pair }: { trading_pair: readonly [string, string] },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<readonly [Array<u128>, Array<u128>]>>;
+
+  /**
+   * Construct and simulate a get_orders transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_orders: (
+    { trading_pair, side, price }: { trading_pair: readonly [string, string]; side: OrderSide; price: u128 },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Array<Order>>>;
+
+  /**
+   * Construct and simulate a get_buy_prices transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_buy_prices: (
+    { trading_pair }: { trading_pair: readonly [string, string] },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Array<Option<u128>>>>;
+
+  /**
    * Construct and simulate a balances transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   balances: (
@@ -342,6 +411,9 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAMY2FuY2VsX29yZGVyAAAAAwAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAIb3JkZXJfaWQAAAfQAAAAC09yZGVyQm9va0lkAAAAAAAAAAAEdXNlcgAAABMAAAABAAAD6QAAB9AAAAAFT3JkZXIAAAAAAAAD",
         "AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
         "AAAAAAAAAAAAAAAId2l0aGRyYXcAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
+        "AAAAAAAAAAAAAAAKZ2V0X3ByaWNlcwAAAAAAAQAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAEAAAPtAAAAAgAAA+oAAAAKAAAD6gAAAAo=",
+        "AAAAAAAAAAAAAAAKZ2V0X29yZGVycwAAAAAAAwAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAEc2lkZQAAB9AAAAAJT3JkZXJTaWRlAAAAAAAAAAAAAAVwcmljZQAAAAAAAAoAAAABAAAD6gAAB9AAAAAFT3JkZXIAAAA=",
+        "AAAAAAAAAAAAAAAOZ2V0X2J1eV9wcmljZXMAAAAAAAEAAAAAAAAADHRyYWRpbmdfcGFpcgAAA+0AAAACAAAAEwAAABMAAAABAAAD6gAAA+gAAAAK",
         "AAAAAAAAAAAAAAAIYmFsYW5jZXMAAAACAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAB9AAAAAMVXNlckJhbGFuY2Vz",
         "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAA",
       ]),
@@ -354,6 +426,9 @@ export class Client extends ContractClient {
     cancel_order: this.txFromJSON<Result<Order>>,
     deposit: this.txFromJSON<null>,
     withdraw: this.txFromJSON<null>,
+    get_prices: this.txFromJSON<readonly [Array<u128>, Array<u128>]>,
+    get_orders: this.txFromJSON<Array<Order>>,
+    get_buy_prices: this.txFromJSON<Array<Option<u128>>>,
     balances: this.txFromJSON<UserBalances>,
     upgrade: this.txFromJSON<null>,
   };
