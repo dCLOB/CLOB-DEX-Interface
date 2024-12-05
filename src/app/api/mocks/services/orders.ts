@@ -222,7 +222,7 @@ class OrderService {
       console.log(
         `balance adjusted ${matchedOrder.id}, user: ${matchedOrderUser.address}, balance ${matchedOrder.side === "sell" ? fillableAmount.multipliedBy(matchedOrder.price) : fillableAmount} ${matchedOrder.side === "sell" ? quoteCurrency : baseCurrency}`,
       );
-      this.closeOrderIfNeeded(matchedOrder, matchedOrderUser);
+      // this.closeOrderIfNeeded(matchedOrder, matchedOrderUser);
       console.log("------------------------------------------------------");
     });
 
@@ -259,9 +259,11 @@ class OrderService {
         {
           pair: order.pair,
           side: order.side,
-          price: tradeService.getLatestPrice(order.pair),
+          // price: tradeService.getLatestPrice(order.pair),
+          price: order.price,
           amount: unfulfilledAmount.toNumber(),
           type: "limit",
+          orderBookId: order.orderBookId,
         },
         user,
       );
