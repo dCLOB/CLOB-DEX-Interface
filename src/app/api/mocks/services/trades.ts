@@ -44,6 +44,10 @@ class TradeService {
   getLatestPrice(pair: string) {
     return this.getPairTrades(pair).at(-1)?.price ?? BASE_CURRENCY_RATIOS[pair as keyof typeof BASE_CURRENCY_RATIOS];
   }
+
+  reset() {
+    this.trades = [];
+  }
 }
 
 export const tradeService = new TradeService();

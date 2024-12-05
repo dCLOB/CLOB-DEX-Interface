@@ -267,6 +267,10 @@ class OrderService {
       );
     }
   }
+
+  reset() {
+    this.orders = [];
+  }
 }
 
 export const orderService = new OrderService();

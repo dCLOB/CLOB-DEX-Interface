@@ -46,6 +46,10 @@ class UserService {
   getUserById(id: string) {
     return this.userData.find((user) => user.id === id);
   }
+
+  reset() {
+    this.userData = [];
+  }
 }
 
 export const userService = new UserService();
