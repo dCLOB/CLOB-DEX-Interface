@@ -3,6 +3,7 @@ import { ConnectWallet } from "../../ConnectWallet";
 import { UserMenu } from "@/components/UserMenu";
 import { Box, styled } from "@mui/material";
 import Image from "next/image";
+import Link from "next/link";
 
 const HeaderStyled = styled("header")(({ theme }) => ({
   padding: theme.spacing(2, 3),
@@ -16,7 +17,9 @@ const HeaderStyled = styled("header")(({ theme }) => ({
 export const Header = () => {
   return (
     <HeaderStyled>
-      <Image src="/logo.svg" height={50} alt="logo" width={100} />
+      <Link href="/" style={{ display: "flex" }}>
+        <Image src="/logo.svg" height={50} alt="logo" width={100} />
+      </Link>
       <Box display="flex" gap={2} alignItems="center">
         <ConnectWallet />
         <UserMenu />
