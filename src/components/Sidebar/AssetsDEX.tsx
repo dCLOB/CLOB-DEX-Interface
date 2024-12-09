@@ -14,7 +14,7 @@ export const AssetsDEX = () => {
 
   return (
     <Box display="flex" flexDirection="column" gap={0.75}>
-      <Typography>Assets on contract [for tests]</Typography>
+      <Typography>Assets on contract</Typography>
       <CurrencyRow title="Trading Balance" value={dexBalances[baseCurrency] ?? 0} token={baseCurrency} />
       <CurrencyRow title="Trading Balance" value={dexBalances[quoteCurrency] ?? 0} token={quoteCurrency} />
     </Box>
