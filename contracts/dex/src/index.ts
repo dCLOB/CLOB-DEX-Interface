@@ -32,7 +32,7 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CBEY7E25DOI6GDD6LEXPBR4JK5TDX6GB6JTXNGEXBGQ2HOPBCTQ4WD4T",
+    contractId: "CAG3E2PGNTC2MCGXVHCFMC75LQBDEIHGLSTNF5TQ7YL4K5JCJZKSDHB2",
   },
 } as const;
 
@@ -47,7 +47,7 @@ export const Errors = {
 
   5: { message: "IncorrectPriceLevelStorageState" },
 
-  6: { message: "InvalidOrderIndex" },
+  6: { message: "InvalidOrderId" },
 
   7: { message: "SameValueStored" },
 
@@ -60,6 +60,22 @@ export const Errors = {
   11: { message: "OrderNotFound" },
 
   12: { message: "IncorrectPrecisionCalculation" },
+
+  13: { message: "InvalidIdFailedToRemove" },
+
+  14: { message: "InvalidIdFailedToUpdate" },
+
+  15: { message: "InvalidIdFailedToLoad" },
+
+  16: { message: "PriceStoreInvalidIndex" },
+
+  17: { message: "PriceStoreOrderNotFoundByIndex" },
+
+  18: { message: "LevelsStorePriceNotFound" },
+
+  19: { message: "LevelsStoreLevelNotFound" },
+
+  20: { message: "LevelsStoreRemoveFailed" },
 };
 export type OrderSide = { tag: "BUY"; values: void } | { tag: "SELL"; values: void };
 
@@ -104,8 +120,8 @@ export interface OrderBook {
 }
 
 export interface PriceLevelStore {
-  levels: Array<Option<PriceStore>>;
-  levels_price: Array<Option<u128>>;
+  levels: Array<PriceStore>;
+  levels_price: Array<u128>;
 }
 
 export interface PriceStore {
@@ -272,75 +288,6 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
 
   /**
-   * Construct and simulate a get_prices transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  get_prices: (
-    { trading_pair }: { trading_pair: readonly [string, string] },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<readonly [Array<u128>, Array<u128>]>>;
-
-  /**
-   * Construct and simulate a get_orders transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  get_orders: (
-    { trading_pair, side, price }: { trading_pair: readonly [string, string]; side: OrderSide; price: u128 },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<Array<Order>>>;
-
-  /**
-   * Construct and simulate a get_buy_prices transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  get_buy_prices: (
-    { trading_pair }: { trading_pair: readonly [string, string] },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<Array<Option<u128>>>>;
-
-  /**
    * Construct and simulate a balances transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   balances: (
@@ -390,7 +337,7 @@ export class Client extends ContractClient {
   constructor(public readonly options: ContractClientOptions) {
     super(
       new ContractSpec([
-        "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAADAAAAAAAAAANRW1wdHlOb2RlVmlldwAAAAAAAAEAAAAAAAAAD1plcm9WYWx1ZUluc2VydAAAAAACAAAAAAAAABROb3RBQ2hpbGRPZkl0c1BhcmVudAAAAAMAAAAAAAAAEU5vdEFQYXJlbnRPZkNoaWxkAAAAAAAABAAAAAAAAAAfSW5jb3JyZWN0UHJpY2VMZXZlbFN0b3JhZ2VTdGF0ZQAAAAAFAAAAAAAAABFJbnZhbGlkT3JkZXJJbmRleAAAAAAAAAYAAAAAAAAAD1NhbWVWYWx1ZVN0b3JlZAAAAAAHAAAAAAAAABRBbW91bnRNdXN0QmVQb3NpdGl2ZQAAAAgAAAAAAAAADlNhbWVQYWlyVG9rZW5zAAAAAAAJAAAAAAAAABBCYWxhbmNlTm90RW5vdWdoAAAACgAAAAAAAAANT3JkZXJOb3RGb3VuZAAAAAAAAAsAAAAAAAAAHUluY29ycmVjdFByZWNpc2lvbkNhbGN1bGF0aW9uAAAAAAAADA==",
+        "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAAFAAAAAAAAAANRW1wdHlOb2RlVmlldwAAAAAAAAEAAAAAAAAAD1plcm9WYWx1ZUluc2VydAAAAAACAAAAAAAAABROb3RBQ2hpbGRPZkl0c1BhcmVudAAAAAMAAAAAAAAAEU5vdEFQYXJlbnRPZkNoaWxkAAAAAAAABAAAAAAAAAAfSW5jb3JyZWN0UHJpY2VMZXZlbFN0b3JhZ2VTdGF0ZQAAAAAFAAAAAAAAAA5JbnZhbGlkT3JkZXJJZAAAAAAABgAAAAAAAAAPU2FtZVZhbHVlU3RvcmVkAAAAAAcAAAAAAAAAFEFtb3VudE11c3RCZVBvc2l0aXZlAAAACAAAAAAAAAAOU2FtZVBhaXJUb2tlbnMAAAAAAAkAAAAAAAAAEEJhbGFuY2VOb3RFbm91Z2gAAAAKAAAAAAAAAA1PcmRlck5vdEZvdW5kAAAAAAAACwAAAAAAAAAdSW5jb3JyZWN0UHJlY2lzaW9uQ2FsY3VsYXRpb24AAAAAAAAMAAAAAAAAABdJbnZhbGlkSWRGYWlsZWRUb1JlbW92ZQAAAAANAAAAAAAAABdJbnZhbGlkSWRGYWlsZWRUb1VwZGF0ZQAAAAAOAAAAAAAAABVJbnZhbGlkSWRGYWlsZWRUb0xvYWQAAAAAAAAPAAAAAAAAABZQcmljZVN0b3JlSW52YWxpZEluZGV4AAAAAAAQAAAAAAAAAB5QcmljZVN0b3JlT3JkZXJOb3RGb3VuZEJ5SW5kZXgAAAAAABEAAAAAAAAAGExldmVsc1N0b3JlUHJpY2VOb3RGb3VuZAAAABIAAAAAAAAAGExldmVsc1N0b3JlTGV2ZWxOb3RGb3VuZAAAABMAAAAAAAAAF0xldmVsc1N0b3JlUmVtb3ZlRmFpbGVkAAAAABQ=",
         "AAAAAgAAAAAAAAAAAAAACU9yZGVyU2lkZQAAAAAAAAIAAAAAAAAAAAAAAANCVVkAAAAAAAAAAAAAAAAEU0VMTA==",
         "AAAAAgAAAAAAAAAAAAAACU9yZGVyVHlwZQAAAAAAAAIAAAAAAAAAAAAAAAVMaW1pdAAAAAAAAAAAAAAAAAAABk1hcmtldAAA",
         "AAAAAQAAAAAAAAAAAAAABU9yZGVyAAAAAAAABgAAAAAAAAAHYWNjb3VudAAAAAATAAAAAAAAAApmZWVfYW1vdW50AAAAAAAKAAAAAAAAAA9mZWVfdG9rZW5fYXNzZXQAAAAAEwAAAAAAAAAIb3JkZXJfaWQAAAAGAAAAAAAAAAVwcmljZQAAAAAAAAoAAAAAAAAACHF1YW50aXR5AAAACg==",
@@ -399,7 +346,7 @@ export class Client extends ContractClient {
         "AAAAAgAAAAAAAAAAAAAAC09yZGVyQm9va0lkAAAAAAIAAAABAAAAAAAAAAVCdXlJZAAAAAAAAAEAAAfQAAAADFByaWNlTGV2ZWxJZAAAAAEAAAAAAAAABlNlbGxJZAAAAAAAAQAAB9AAAAAMUHJpY2VMZXZlbElk",
         "AAAAAQAAAAAAAAAAAAAADFByaWNlTGV2ZWxJZAAAAAIAAAAAAAAAAmlkAAAAAAAGAAAAAAAAAAVwcmljZQAAAAAAAAo=",
         "AAAAAQAAAAAAAAAAAAAACU9yZGVyQm9vawAAAAAAAAIAAAAAAAAACmJ1eV9vcmRlcnMAAAAAB9AAAAAPUHJpY2VMZXZlbFN0b3JlAAAAAAAAAAALc2VsbF9vcmRlcnMAAAAH0AAAAA9QcmljZUxldmVsU3RvcmUA",
-        "AAAAAQAAAAAAAAAAAAAAD1ByaWNlTGV2ZWxTdG9yZQAAAAACAAAAAAAAAAZsZXZlbHMAAAAAA+oAAAPoAAAH0AAAAApQcmljZVN0b3JlAAAAAAAAAAAADGxldmVsc19wcmljZQAAA+oAAAPoAAAACg==",
+        "AAAAAQAAAAAAAAAAAAAAD1ByaWNlTGV2ZWxTdG9yZQAAAAACAAAAAAAAAAZsZXZlbHMAAAAAA+oAAAfQAAAAClByaWNlU3RvcmUAAAAAAAAAAAAMbGV2ZWxzX3ByaWNlAAAD6gAAAAo=",
         "AAAAAQAAAAAAAAAAAAAAClByaWNlU3RvcmUAAAAAAAQAAAAAAAAACW9yZGVyX2lkcwAAAAAAA+wAAAAGAAAABAAAAAAAAAAGb3JkZXJzAAAAAAPqAAAD6AAAB9AAAAAFT3JkZXIAAAAAAAAAAAAAEW9yZGVyc19pZF9jb3VudGVyAAAAAAAABgAAAAAAAAAFcHJpY2UAAAAAAAAK",
         "AAAAAgAAAAAAAAAAAAAACkZpbGxTdGF0dXMAAAAAAAMAAAAAAAAAAAAAAAhDb21wbGV0ZQAAAAAAAAAAAAAAB1BhcnRpYWwAAAAAAAAAAAAAAAAETm9uZQ==",
         "AAAAAQAAAAAAAAAAAAAACU1ha2VyRmlsbAAAAAAAAAQAAAAAAAAAC2ZpbGxfYW1vdW50AAAAAAoAAAAAAAAACWZpbGxfdHlwZQAAAAAAB9AAAAAKRmlsbFN0YXR1cwAAAAAAAAAAAAttYWtlcl9vcmRlcgAAAAfQAAAABU9yZGVyAAAAAAAAAAAAAANvaXgAAAAH0AAAAAtPcmRlckJvb2tJZAA=",
@@ -411,9 +358,6 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAMY2FuY2VsX29yZGVyAAAAAwAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAIb3JkZXJfaWQAAAfQAAAAC09yZGVyQm9va0lkAAAAAAAAAAAEdXNlcgAAABMAAAABAAAD6QAAB9AAAAAFT3JkZXIAAAAAAAAD",
         "AAAAAAAAAAAAAAAHZGVwb3NpdAAAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
         "AAAAAAAAAAAAAAAId2l0aGRyYXcAAAADAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAAAAAAZhbW91bnQAAAAAAAsAAAAA",
-        "AAAAAAAAAAAAAAAKZ2V0X3ByaWNlcwAAAAAAAQAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAEAAAPtAAAAAgAAA+oAAAAKAAAD6gAAAAo=",
-        "AAAAAAAAAAAAAAAKZ2V0X29yZGVycwAAAAAAAwAAAAAAAAAMdHJhZGluZ19wYWlyAAAD7QAAAAIAAAATAAAAEwAAAAAAAAAEc2lkZQAAB9AAAAAJT3JkZXJTaWRlAAAAAAAAAAAAAAVwcmljZQAAAAAAAAoAAAABAAAD6gAAB9AAAAAFT3JkZXIAAAA=",
-        "AAAAAAAAAAAAAAAOZ2V0X2J1eV9wcmljZXMAAAAAAAEAAAAAAAAADHRyYWRpbmdfcGFpcgAAA+0AAAACAAAAEwAAABMAAAABAAAD6gAAA+gAAAAK",
         "AAAAAAAAAAAAAAAIYmFsYW5jZXMAAAACAAAAAAAAAAR1c2VyAAAAEwAAAAAAAAAFdG9rZW4AAAAAAAATAAAAAQAAB9AAAAAMVXNlckJhbGFuY2Vz",
         "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAA",
       ]),
@@ -426,9 +370,6 @@ export class Client extends ContractClient {
     cancel_order: this.txFromJSON<Result<Order>>,
     deposit: this.txFromJSON<null>,
     withdraw: this.txFromJSON<null>,
-    get_prices: this.txFromJSON<readonly [Array<u128>, Array<u128>]>,
-    get_orders: this.txFromJSON<Array<Order>>,
-    get_buy_prices: this.txFromJSON<Array<Option<u128>>>,
     balances: this.txFromJSON<UserBalances>,
     upgrade: this.txFromJSON<null>,
   };

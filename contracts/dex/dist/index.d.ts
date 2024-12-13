@@ -12,8 +12,7 @@ export * as rpc from "@stellar/stellar-sdk/rpc";
 export declare const networks: {
   readonly testnet: {
     readonly networkPassphrase: "Test SDF Network ; September 2015";
-
-    readonly contractId: "CBEY7E25DOI6GDD6LEXPBR4JK5TDX6GB6JTXNGEXBGQ2HOPBCTQ4WD4T";
+    readonly contractId: "CAG3E2PGNTC2MCGXVHCFMC75LQBDEIHGLSTNF5TQ7YL4K5JCJZKSDHB2";
   };
 };
 export declare const Errors: {
@@ -51,6 +50,30 @@ export declare const Errors: {
     message: string;
   };
   12: {
+    message: string;
+  };
+  13: {
+    message: string;
+  };
+  14: {
+    message: string;
+  };
+  15: {
+    message: string;
+  };
+  16: {
+    message: string;
+  };
+  17: {
+    message: string;
+  };
+  18: {
+    message: string;
+  };
+  19: {
+    message: string;
+  };
+  20: {
     message: string;
   };
 };
@@ -111,8 +134,8 @@ export interface OrderBook {
   sell_orders: PriceLevelStore;
 }
 export interface PriceLevelStore {
-  levels: Array<Option<PriceStore>>;
-  levels_price: Array<Option<u128>>;
+  levels: Array<PriceStore>;
+  levels_price: Array<u128>;
 }
 export interface PriceStore {
   order_ids: Map<u64, u32>;
@@ -294,82 +317,6 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<null>>;
   /**
-   * Construct and simulate a get_prices transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  get_prices: (
-    {
-      trading_pair,
-    }: {
-      trading_pair: readonly [string, string];
-    },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<readonly [Array<u128>, Array<u128>]>>;
-  /**
-   * Construct and simulate a get_orders transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  get_orders: (
-    {
-      trading_pair,
-      side,
-      price,
-    }: {
-      trading_pair: readonly [string, string];
-      side: OrderSide;
-      price: u128;
-    },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<Array<Order>>>;
-  /**
-   * Construct and simulate a get_buy_prices transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  get_buy_prices: (
-    {
-      trading_pair,
-    }: {
-      trading_pair: readonly [string, string];
-    },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<Array<Option<u128>>>>;
-  /**
    * Construct and simulate a balances transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   balances: (
@@ -435,9 +382,6 @@ export declare class Client extends ContractClient {
     ) => AssembledTransaction<Result<Order, import("@stellar/stellar-sdk/contract").ErrorMessage>>;
     deposit: (json: string) => AssembledTransaction<null>;
     withdraw: (json: string) => AssembledTransaction<null>;
-    get_prices: (json: string) => AssembledTransaction<readonly [bigint[], bigint[]]>;
-    get_orders: (json: string) => AssembledTransaction<Order[]>;
-    get_buy_prices: (json: string) => AssembledTransaction<Option<bigint>[]>;
     balances: (json: string) => AssembledTransaction<UserBalances>;
     upgrade: (json: string) => AssembledTransaction<null>;
   };
