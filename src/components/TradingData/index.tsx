@@ -35,7 +35,7 @@ export const TradingData = () => {
           <TradingDataValue title="24h Change">
             <Typography variant="body2" color={color} fontWeight="bold">
               {isPositive && "+"}
-              {formatDecimal(activePair.priceChange * 100)}%
+              {formatDecimal(Number(activePair.priceChange) * 100)}%
             </Typography>
           </TradingDataValue>
 
