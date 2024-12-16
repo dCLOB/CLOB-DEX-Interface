@@ -17,7 +17,7 @@ export async function GET() {
       lastPrice,
       lowestPrice: trades.length ? Math.min(...prices) : basePrice,
       highestPrice: trades.length ? Math.max(...prices) : basePrice,
-      priceChange: (lastPrice - basePrice) / lastPrice,
+      priceChange: BigNumber(lastPrice).minus(basePrice).dividedBy(lastPrice).toString() as `${number}`,
       baseVolume: trades.reduce((volume, trade) => volume.plus(trade.amount), BigNumber(0)).toString() as `${number}`,
       quoteVolume: trades
         .reduce((volume, trade) => volume.plus(BigNumber(trade.amount).multipliedBy(trade.price)), BigNumber(0))
