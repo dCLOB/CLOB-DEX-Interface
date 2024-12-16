@@ -89,7 +89,7 @@ export const PairDropdown = () => {
                     variant="body2"
                     fontWeight="bold"
                     align="right"
-                    color={market.priceChange >= 0 ? "success" : "error"}
+                    color={Number(market.priceChange) >= 0 ? "success" : "error"}
                   >
                     {formatDecimal(market.lastPrice)}
                   </Typography>
@@ -97,10 +97,10 @@ export const PairDropdown = () => {
                     variant="body2"
                     fontWeight="bold"
                     align="right"
-                    color={market.priceChange >= 0 ? "success" : "error"}
+                    color={Number(market.priceChange) >= 0 ? "success" : "error"}
                   >
-                    {market.priceChange >= 0 && "+"}
-                    {formatDecimal(market.priceChange * 100)}%
+                    {Number(market.priceChange) >= 0 && "+"}
+                    {formatDecimal(Number(market.priceChange) * 100)}%
                   </Typography>
                   <Typography variant="body2" fontWeight="bold" align="right">
                     {formatDecimal(market.baseVolume)}
