@@ -15,7 +15,7 @@ export const TradingData = () => {
 
   const activePair = data?.data.find((market) => market.id === pair);
 
-  const isPositive = activePair && activePair.priceChange >= 0;
+  const isPositive = activePair && Number(activePair.priceChange) >= 0;
   const color = isPositive ? "success" : "error";
   const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(activePair?.id);
 
