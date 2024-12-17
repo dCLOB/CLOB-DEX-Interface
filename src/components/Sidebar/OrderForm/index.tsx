@@ -1,6 +1,6 @@
 "use client";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Tab, Tabs, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TextField } from "@/components/TextField";
 import usePairStore from "@/stores/pair";
 import { getCurrenciesFromPair } from "@/utils";
@@ -61,6 +61,18 @@ export const OrderForm = () => {
   const quoteTokenContract = useTokenContract(quoteCurrency);
   const dexContract = useDexContract();
 
+  const [baseTokenDecimals, setBaseTokenDecimals] = useState<number>(7);
+  const [quoteTokenDecimals, setQuoteTokenDecimals] = useState<number>(7);
+
+  const handleGetDecimals = async () => {
+    const [baseTokenDecimals, quoteTokenDecimals] = await Promise.all([
+      baseTokenContract.decimals().then((res) => res.result),
+      quoteTokenContract.decimals().then((res) => res.result),
+    ]);
+    setBaseTokenDecimals(baseTokenDecimals);
+    setQuoteTokenDecimals(quoteTokenDecimals);
+  };
+
   const onSubmit =
     (side: OrderSide, checkFee?: boolean, isPayFeeApproved?: boolean) =>
     async ({ type, price, amount }: { type?: string; price?: string; amount?: string }) => {
@@ -102,12 +114,6 @@ export const OrderForm = () => {
           amount: parseFloat(amount!),
           pair,
         };
-        // TODO
-        const [baseTokenDecimals, quoteTokenDecimals] = await Promise.all([
-          baseTokenContract.decimals().then((res) => res.result),
-          quoteTokenContract.decimals().then((res) => res.result),
-        ]);
-
         const tx = await dexContract.create_order(
           createOrderContractData(orderData, address as string, baseTokenDecimals, quoteTokenDecimals),
         );
@@ -154,6 +160,10 @@ export const OrderForm = () => {
     await handleSubmit(onSubmit(side, false, true))();
   };
 
+  useEffect(() => {
+    handleGetDecimals();
+  }, [baseTokenContract, quoteTokenContract]);
+
   return (
     <form>
       <Box display="flex" flexDirection="column" gap={0.75}>
@@ -188,6 +198,7 @@ export const OrderForm = () => {
                 label="Price"
                 {...field}
                 fieldState={fieldState}
+                scale={quoteTokenDecimals}
               />
             )}
           />
@@ -202,6 +213,7 @@ export const OrderForm = () => {
               label="Amount"
               {...field}
               fieldState={fieldState}
+              scale={baseTokenDecimals}
             />
           )}
         />

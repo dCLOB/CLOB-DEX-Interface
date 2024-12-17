@@ -21,31 +21,34 @@ const mapFieldState = (
   };
 };
 
-const TextFieldMask = forwardRef<HTMLInputElement, InputBaseComponentProps>(function TextFieldMask(props, ref) {
-  const { onChange, ...other } = props;
-  return (
-    <IMaskInput
-      {...other}
-      mask={Number}
-      // thousandsSeparator=","
-      radix="."
-      min={0}
-      scale={7}
-      inputMode="decimal"
-      padFractionalZeros={false}
-      normalizeZeros={false}
-      autofix={false}
-      inputRef={ref}
-      unmask
-      onAccept={(value) => {
-        onChange?.({ target: { value } } as unknown as ChangeEvent<HTMLInputElement>);
-      }}
-      // overwrite
-      // autofix
-      // normalizeZeros
-    />
-  );
-});
+const TextFieldMask = forwardRef<HTMLInputElement, InputBaseComponentProps & { scale?: number }>(
+  function TextFieldMask(props, ref) {
+    const { onChange, scale = 7, ...other } = props;
+
+    return (
+      <IMaskInput
+        {...other}
+        mask={Number}
+        // thousandsSeparator=","
+        radix="."
+        min={0}
+        scale={scale}
+        inputMode="decimal"
+        padFractionalZeros={false}
+        normalizeZeros={false}
+        autofix={false}
+        inputRef={ref}
+        unmask
+        onAccept={(value) => {
+          onChange?.({ target: { value } } as unknown as ChangeEvent<HTMLInputElement>);
+        }}
+        // overwrite
+        // autofix
+        // normalizeZeros
+      />
+    );
+  },
+);
 
 export const TextField = ({
   InputProps,
@@ -53,8 +56,13 @@ export const TextField = ({
   withNumberMask = false,
   label,
   fieldState,
+  scale,
   ...props
-}: Omit<TextFieldProps, "variant"> & { withNumberMask?: boolean; fieldState?: ControllerFieldState }) => {
+}: Omit<TextFieldProps, "variant"> & {
+  withNumberMask?: boolean;
+  fieldState?: ControllerFieldState;
+  scale?: number;
+}) => {
   const mappedFieldState = fieldState && mapFieldState(fieldState, helperText);
 
   return (
@@ -72,7 +80,7 @@ export const TextField = ({
         {...mappedFieldState}
         InputProps={{
           ...InputProps,
-          ...(withNumberMask && { inputComponent: TextFieldMask }),
+          ...(withNumberMask && { inputComponent: TextFieldMask, inputProps: { scale } }),
           ...(InputProps?.endAdornment && {
             endAdornment: <InputAdornment position="end">{InputProps.endAdornment}</InputAdornment>,
           }),
