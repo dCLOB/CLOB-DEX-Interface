@@ -18,7 +18,7 @@ const useFreighter = (): IFreighterContext => {
       const { isConnected } = await freighterApi.isConnected();
       if (!isConnected) {
         setStatus("disconnected");
-        // TODO open freighter page
+        window.open("https://www.freighter.app/", "_blank");
         throw new Error("Freighter is not available");
       }
       const result = await freighterApi.requestAccess();
@@ -32,6 +32,11 @@ const useFreighter = (): IFreighterContext => {
   // watch wallet changes
   useEffect(() => {
     setStatus("connecting");
+
+    freighterApi.isConnected().then((res) => {
+      if (!res.isConnected) setStatus("disconnected");
+    });
+
     const watcher = new freighterApi.WatchWalletChanges(1000);
     watcher.watch(({ address, network, networkPassphrase }) => {
       //temp mock
