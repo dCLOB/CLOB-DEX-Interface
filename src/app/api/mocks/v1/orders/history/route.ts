@@ -10,6 +10,6 @@ export async function GET(request: NextRequest) {
   const user: UserData = await userService.getOrCreateUser(address);
   const orders: Order[] = orderService
     .getUserClosedOrders(user)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   return Response.json(orders);
 }
