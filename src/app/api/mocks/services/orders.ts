@@ -227,8 +227,26 @@ class OrderService {
     });
 
     //////!!!!!!
+    this.returnDiffToBalance(newOrder, newOrderUser);
     this.closeOrderIfNeeded(newOrder, newOrderUser);
     console.log("======================================================");
+  }
+
+  returnDiffToBalance(order: Order, user: UserData) {
+    const unfulfilledAmount = BigNumber(order.amount).minus(order.filled);
+    // return unfulfilled part to market order user
+    const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
+
+    if (order.side === "sell") {
+      userService.addBalance(user.address, baseCurrency, unfulfilledAmount.toNumber());
+      console.log(`balance adjusted ${order.id}, user: ${user.address}, balance ${unfulfilledAmount} ${baseCurrency}`);
+    } else {
+      const orderTrades = tradeService.getOrderTrades(order.id);
+      const diff =
+        order.amount * order.price - orderTrades.reduce((total, trade) => total + trade.price * trade.amount, 0);
+      userService.addBalance(user.address, quoteCurrency, diff);
+      console.log(`balance adjusted ${order.id}, user: ${user.address}, balance ${diff} ${quoteCurrency}`);
+    }
   }
 
   closeOrderIfNeeded(order: Order, user: UserData) {
@@ -239,22 +257,7 @@ class OrderService {
       order.status = order.filled ? "partiallyFilled" : "canceled";
       console.log(`order ${order.id} closed. filled: ${order.filled}/${order.amount}`);
       const unfulfilledAmount = BigNumber(order.amount).minus(order.filled);
-      // return unfulfilled part to market order user
-      const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
-
-      if (order.side === "sell") {
-        userService.addBalance(user.address, baseCurrency, unfulfilledAmount.toNumber());
-        console.log(
-          `balance adjusted ${order.id}, user: ${user.address}, balance ${unfulfilledAmount} ${baseCurrency}`,
-        );
-      } else {
-        const orderTrades = tradeService.getOrderTrades(order.id);
-        const diff =
-          order.amount * order.price - orderTrades.reduce((total, trade) => total + trade.price * trade.amount, 0);
-        userService.addBalance(user.address, quoteCurrency, diff);
-        console.log(`balance adjusted ${order.id}, user: ${user.address}, balance ${diff} ${quoteCurrency}`);
-      }
-
+      this.returnDiffToBalance(order, user);
       this.createOrder(
         {
           pair: order.pair,
