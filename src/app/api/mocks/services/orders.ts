@@ -233,9 +233,13 @@ class OrderService {
   }
 
   returnDiffToBalance(order: Order, user: UserData) {
+    // unfulfilled orders don't need adjustments
+    if (!order.filled) return;
+
     const unfulfilledAmount = BigNumber(order.amount).minus(order.filled);
     // return unfulfilled part to market order user
     const { baseCurrency, quoteCurrency } = getCurrenciesFromPair(order.pair);
+    console.log(`order ${order.id} unfulfilledAmount ${unfulfilledAmount}`);
 
     if (order.side === "sell") {
       userService.addBalance(user.address, baseCurrency, unfulfilledAmount.toNumber());
@@ -257,7 +261,6 @@ class OrderService {
       order.status = order.filled ? "partiallyFilled" : "canceled";
       console.log(`order ${order.id} closed. filled: ${order.filled}/${order.amount}`);
       const unfulfilledAmount = BigNumber(order.amount).minus(order.filled);
-      this.returnDiffToBalance(order, user);
       this.createOrder(
         {
           pair: order.pair,
