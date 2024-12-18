@@ -1,0 +1,82 @@
+name: CI/CD - Development
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+env:
+  AWS_REGION: eu-central-1
+  IMAGE_TAG: latest
+  NAMESPACE: clob-dex
+
+concurrency:
+  group: deploy-development-clob-dex
+  cancel-in-progress: true
+
+jobs:
+  clob-dex:
+    name: clob-dex
+    env:
+      ECR_REPOSITORY: clob-dex/backend
+      DEPLOYMENT_NAME: clob-dex
+      HOST_URL: app.dclob.com
+    runs-on: ubuntu-20.04
+    environment: Development
+    steps:
+      - name: Information
+        env:
+          BRANCH: ${{ github.ref }}
+        run: |
+          if [ -n "$BRANCH" ]
+          then
+            echo Deploying "$BRANCH" for "$DEPLOYMENT_NAME"
+          else
+            echo Deploying default branch for "$DEPLOYMENT_NAME"
+          fi
+      - name: Build - Git Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.9.0'
+      - name: Install dependencies
+        run: npm install
+      - name: Run Lint
+        run: npm run lint
+      - name: Build - Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ISS }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ISS }}
+          aws-region: eu-central-1
+
+      - name: Build - Get ECR Repository
+        run: |
+          aws ecr describe-repositories --region eu-central-1 --repository-names $ECR_REPOSITORY > /dev/null 2>&1 || \
+            aws ecr create-repository --region eu-central-1  --repository-name $ECR_REPOSITORY
+      - name: Build - Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build - Build and push image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY -a
+      - name: Deploy - Update Kubernetes Deployment
+        id: deploy-interface
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          aws eks update-kubeconfig --region eu-central-1 --name ideasoft-prod
+          kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install "$DEPLOYMENT_NAME" -n $NAMESPACE oci://$ECR_REGISTRY/helm-template-iss --version 1 \
+            -f ./helm-values.yaml \
+            --set "image.repository=$ECR_REGISTRY/$ECR_REPOSITORY" \
+            --set "image.tag=$IMAGE_TAG" \
+            --set "istio_url=$HOST_URL"
+          kubectl -n $NAMESPACE rollout status "deployment/$DEPLOYMENT_NAME"
