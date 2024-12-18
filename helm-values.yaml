@@ -1,0 +1,78 @@
+USER-SUPPLIED VALUES:
+affinity: {}
+autoscaling:
+  enabled: true
+  maxReplicas: 1
+  minReplicas: 1
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+canary:
+  enabled: false
+fullnameOverride: ""
+image:
+  containerPort: 3000
+  livenessProbe:
+    failureThreshold: 3
+    path: /
+    periodSeconds: 300
+    port: 3000
+    successThreshold: 1
+    timeoutSeconds: 1
+  pullPolicy: Always
+  readinessProbe:
+    failureThreshold: 3
+    path: /
+    periodSeconds: 30
+    port: 3000
+    successThreshold: 1
+    timeoutSeconds: 1
+  repository: 335258918943.dkr.ecr.eu-central-1.amazonaws.com/clob-dex-interface
+  tag: latest
+imagePullSecrets: []
+infisical:
+  enabled: true
+  environment: dev
+  host: https://infisical.sre.ideasoft.io/api
+  namespace: clob-dex
+  token: st.e973e846-3921-4ac3-825b-ede42ba54851.ec735407850323c8285647cddee080c7.781fcaa613182af6a172ac1502d98aef
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+  enabled: false
+  hosts:
+  - host: app.dclob.com
+  old: true
+  tls:
+  - hosts:
+    - app.dclob.com
+  updated: false
+istio_url: 'app.dclob.com '
+nameOverride: ""
+nodeSelector: {}
+normal_deploy:
+  enabled: true
+podAnnotations:
+  product: api
+podSecurityContext: {}
+port: 3000
+replicaCount: 1
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+securityContext: {}
+service:
+  port: 3000
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: false
+  name: ""
+strategy:
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+tolerations: []
+version: api-v1
+vpn_ip: 54.93.200.105/32
