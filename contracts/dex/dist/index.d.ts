@@ -12,7 +12,7 @@ export * as rpc from "@stellar/stellar-sdk/rpc";
 export declare const networks: {
   readonly testnet: {
     readonly networkPassphrase: "Test SDF Network ; September 2015";
-    readonly contractId: "CAG3E2PGNTC2MCGXVHCFMC75LQBDEIHGLSTNF5TQ7YL4K5JCJZKSDHB2";
+    readonly contractId: "CDUXDVFU3J3J4DHCX4MOJRUX5YO3QLBXCJFLRLGWZ6ACVL76JQUG5TTL";
   };
 };
 export declare const Errors: {
@@ -65,15 +65,6 @@ export declare const Errors: {
     message: string;
   };
   17: {
-    message: string;
-  };
-  18: {
-    message: string;
-  };
-  19: {
-    message: string;
-  };
-  20: {
     message: string;
   };
 };

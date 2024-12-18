@@ -10,37 +10,34 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CAG3E2PGNTC2MCGXVHCFMC75LQBDEIHGLSTNF5TQ7YL4K5JCJZKSDHB2",
+    contractId: "CDUXDVFU3J3J4DHCX4MOJRUX5YO3QLBXCJFLRLGWZ6ACVL76JQUG5TTL",
   },
 };
 export const Errors = {
-  1: { message: "EmptyNodeView" },
-  2: { message: "ZeroValueInsert" },
-  3: { message: "NotAChildOfItsParent" },
-  4: { message: "NotAParentOfChild" },
-  5: { message: "IncorrectPriceLevelStorageState" },
-  6: { message: "InvalidOrderId" },
-  7: { message: "SameValueStored" },
-  8: { message: "AmountMustBePositive" },
-  9: { message: "SamePairTokens" },
-  10: { message: "BalanceNotEnough" },
-  11: { message: "OrderNotFound" },
-  12: { message: "IncorrectPrecisionCalculation" },
-  13: { message: "InvalidIdFailedToRemove" },
-  14: { message: "InvalidIdFailedToUpdate" },
-  15: { message: "InvalidIdFailedToLoad" },
-  16: { message: "PriceStoreInvalidIndex" },
-  17: { message: "PriceStoreOrderNotFoundByIndex" },
-  18: { message: "LevelsStorePriceNotFound" },
-  19: { message: "LevelsStoreLevelNotFound" },
-  20: { message: "LevelsStoreRemoveFailed" },
+  1: { message: "IncorrectPriceLevelStorageState" },
+  2: { message: "InvalidOrderId" },
+  3: { message: "SameValueStored" },
+  4: { message: "AmountMustBePositive" },
+  5: { message: "SamePairTokens" },
+  6: { message: "BalanceNotEnough" },
+  7: { message: "OrderNotFound" },
+  8: { message: "IncorrectPrecisionCalculation" },
+  9: { message: "InvalidIdFailedToRemove" },
+  10: { message: "InvalidIdFailedToUpdate" },
+  11: { message: "InvalidIdFailedToLoad" },
+  12: { message: "PriceStoreInvalidIndex" },
+  13: { message: "PriceStoreOrderNotFoundByIndex" },
+  14: { message: "LevelsStorePriceNotFound" },
+  15: { message: "LevelsStoreLevelNotFound" },
+  16: { message: "LevelsStoreRemoveFailed" },
+  17: { message: "OrderBookNotFound" },
 };
 export class Client extends ContractClient {
   options;
   constructor(options) {
     super(
       new ContractSpec([
-        "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAAFAAAAAAAAAANRW1wdHlOb2RlVmlldwAAAAAAAAEAAAAAAAAAD1plcm9WYWx1ZUluc2VydAAAAAACAAAAAAAAABROb3RBQ2hpbGRPZkl0c1BhcmVudAAAAAMAAAAAAAAAEU5vdEFQYXJlbnRPZkNoaWxkAAAAAAAABAAAAAAAAAAfSW5jb3JyZWN0UHJpY2VMZXZlbFN0b3JhZ2VTdGF0ZQAAAAAFAAAAAAAAAA5JbnZhbGlkT3JkZXJJZAAAAAAABgAAAAAAAAAPU2FtZVZhbHVlU3RvcmVkAAAAAAcAAAAAAAAAFEFtb3VudE11c3RCZVBvc2l0aXZlAAAACAAAAAAAAAAOU2FtZVBhaXJUb2tlbnMAAAAAAAkAAAAAAAAAEEJhbGFuY2VOb3RFbm91Z2gAAAAKAAAAAAAAAA1PcmRlck5vdEZvdW5kAAAAAAAACwAAAAAAAAAdSW5jb3JyZWN0UHJlY2lzaW9uQ2FsY3VsYXRpb24AAAAAAAAMAAAAAAAAABdJbnZhbGlkSWRGYWlsZWRUb1JlbW92ZQAAAAANAAAAAAAAABdJbnZhbGlkSWRGYWlsZWRUb1VwZGF0ZQAAAAAOAAAAAAAAABVJbnZhbGlkSWRGYWlsZWRUb0xvYWQAAAAAAAAPAAAAAAAAABZQcmljZVN0b3JlSW52YWxpZEluZGV4AAAAAAAQAAAAAAAAAB5QcmljZVN0b3JlT3JkZXJOb3RGb3VuZEJ5SW5kZXgAAAAAABEAAAAAAAAAGExldmVsc1N0b3JlUHJpY2VOb3RGb3VuZAAAABIAAAAAAAAAGExldmVsc1N0b3JlTGV2ZWxOb3RGb3VuZAAAABMAAAAAAAAAF0xldmVsc1N0b3JlUmVtb3ZlRmFpbGVkAAAAABQ=",
+        "AAAABAAAAAAAAAAAAAAABUVycm9yAAAAAAAAEQAAAAAAAAAfSW5jb3JyZWN0UHJpY2VMZXZlbFN0b3JhZ2VTdGF0ZQAAAAABAAAAAAAAAA5JbnZhbGlkT3JkZXJJZAAAAAAAAgAAAAAAAAAPU2FtZVZhbHVlU3RvcmVkAAAAAAMAAAAAAAAAFEFtb3VudE11c3RCZVBvc2l0aXZlAAAABAAAAAAAAAAOU2FtZVBhaXJUb2tlbnMAAAAAAAUAAAAAAAAAEEJhbGFuY2VOb3RFbm91Z2gAAAAGAAAAAAAAAA1PcmRlck5vdEZvdW5kAAAAAAAABwAAAAAAAAAdSW5jb3JyZWN0UHJlY2lzaW9uQ2FsY3VsYXRpb24AAAAAAAAIAAAAAAAAABdJbnZhbGlkSWRGYWlsZWRUb1JlbW92ZQAAAAAJAAAAAAAAABdJbnZhbGlkSWRGYWlsZWRUb1VwZGF0ZQAAAAAKAAAAAAAAABVJbnZhbGlkSWRGYWlsZWRUb0xvYWQAAAAAAAALAAAAAAAAABZQcmljZVN0b3JlSW52YWxpZEluZGV4AAAAAAAMAAAAAAAAAB5QcmljZVN0b3JlT3JkZXJOb3RGb3VuZEJ5SW5kZXgAAAAAAA0AAAAAAAAAGExldmVsc1N0b3JlUHJpY2VOb3RGb3VuZAAAAA4AAAAAAAAAGExldmVsc1N0b3JlTGV2ZWxOb3RGb3VuZAAAAA8AAAAAAAAAF0xldmVsc1N0b3JlUmVtb3ZlRmFpbGVkAAAAABAAAAAAAAAAEU9yZGVyQm9va05vdEZvdW5kAAAAAAAAEQ==",
         "AAAAAgAAAAAAAAAAAAAACU9yZGVyU2lkZQAAAAAAAAIAAAAAAAAAAAAAAANCVVkAAAAAAAAAAAAAAAAEU0VMTA==",
         "AAAAAgAAAAAAAAAAAAAACU9yZGVyVHlwZQAAAAAAAAIAAAAAAAAAAAAAAAVMaW1pdAAAAAAAAAAAAAAAAAAABk1hcmtldAAA",
         "AAAAAQAAAAAAAAAAAAAABU9yZGVyAAAAAAAABgAAAAAAAAAHYWNjb3VudAAAAAATAAAAAAAAAApmZWVfYW1vdW50AAAAAAAKAAAAAAAAAA9mZWVfdG9rZW5fYXNzZXQAAAAAEwAAAAAAAAAIb3JkZXJfaWQAAAAGAAAAAAAAAAVwcmljZQAAAAAAAAoAAAAAAAAACHF1YW50aXR5AAAACg==",
