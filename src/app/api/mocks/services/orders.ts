@@ -233,8 +233,8 @@ class OrderService {
   }
 
   returnDiffToBalance(order: Order, user: UserData) {
-    // unfulfilled orders don't need adjustments
-    if (!order.filled) return;
+    // unfulfilled LIMIT orders don't need adjustments
+    if (order.type === "limit" && !order.filled) return;
 
     const unfulfilledAmount = BigNumber(order.amount).minus(order.filled);
     // return unfulfilled part to market order user
